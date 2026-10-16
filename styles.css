@@ -84,3 +84,9 @@
  #printArea .report-movement-detail{font-size:8pt}
  #printArea .report-support-summary{break-inside:avoid}
 }
+
+/* Captura guiada de recibos · Casa en Orden 3.3 */
+.ocr-box{border:1px solid #d9c6f5;background:#faf7ff;border-radius:16px;padding:13px;margin:10px 0 15px}.ocr-box strong{display:block;font-size:13px;color:#56299b;margin-bottom:6px}.ocr-box .small{color:#665479;margin-bottom:10px}.ocr-box .field{margin-bottom:4px}.ocr-status{font-size:12px;color:#5d4582;line-height:1.45;margin-top:8px}
+
+/* Administración de comprobantes desde Finanzas */
+.support-preview-photo{display:block;max-width:100%;max-height:45vh;width:auto;height:auto;object-fit:contain;margin:12px auto;border:1px solid #e1d7ec;border-radius:12px;background:#fff}

@@ -1,4 +1,4 @@
-# Casa en Orden 3.2 💜 · Diez mejoras y mini-comprobantes (versión de prueba)
+# Casa en Orden 3.3 💜 · Mini-comprobantes y lectura asistida de recibos (versión de prueba)
 
 Aplicación web instalable en iPhone desde Safari, diseñada para funcionar como PWA. **No es una app de la App Store ni actualiza automáticamente la instalada**. Mantiene la identidad morada de Casa en Orden 3.0.
 
@@ -18,16 +18,16 @@ Aplicación web instalable en iPhone desde Safari, diseñada para funcionar como
 ## Instalar y probar SIN reemplazar la versión anterior
 
 1. En el iPhone abre **Archivos**, localiza el ZIP descargado, tócala para descomprimirlo y abre la carpeta.
-2. Para probarla sin alterar tu app actual, crea en GitHub **otro repositorio**, por ejemplo `Casa-en-orden-v32-prueba` (GitHub Pages gratuito requiere repositorio público en la configuración habitual). Si decides actualizar tu repositorio 3.1, primero exporta un respaldo completo y comprueba que puedas abrirlo; los archivos de código se reemplazan, pero no debes eliminar los datos locales.
+2. Crea en GitHub **otro repositorio**, por ejemplo `Casa-en-orden-v31-prueba` (GitHub Pages gratuito requiere repositorio público en la configuración habitual).
 3. Sube **todos los archivos de esta carpeta directamente a la raíz del repositorio** (no el ZIP y no una carpeta contenedora).
 4. En el repositorio abre **Settings → Pages → Deploy from a branch → main → /(root) → Save**.
-5. La dirección tendrá el formato `https://TUUSUARIO.github.io/Casa-en-orden-v32-prueba/`. Abre esa dirección en Safari. Cuando termine la publicación, puedes elegir **Compartir → Agregar a pantalla de inicio → Abrir como app web**.
+5. La dirección tendrá el formato `https://TUUSUARIO.github.io/Casa-en-orden-v31-prueba/`. Abre esa dirección en Safari. Cuando termine la publicación, puedes elegir **Compartir → Agregar a pantalla de inicio → Abrir como app web**.
 6. **No borres** la aplicación 1.0, 2.0 o 3.0 hasta terminar las pruebas y respaldar tus datos.
 
 ### Datos y respaldos
 
 - Este ensayo utiliza una clave de almacenamiento diferente (`casa-en-orden-v3-1`) y una base local de comprobantes diferente, para no sobrescribir los registros ni borrar anexos de la app 3.0.
-- En el primer arranque **intenta copiar** datos de la versión 3.0 si están almacenados en la misma procedencia web y no existe ya un estado de 3.1. Después la copia puede evolucionar por separado. Los comprobantes pueden necesitar una migración local: comprueba que estén presentes. En un repositorio nuevo debes **importar el respaldo**, porque cambiar la ruta de GitHub Pages puede afectar el alcance del almacenamiento de la PWA.
+- En el primer arranque **intenta copiar** datos de la versión 3.0 si están almacenados bajo el mismo origen web de GitHub Pages. Después cada versión mantiene sus cambios locales independientes. El traspaso de comprobantes es una copia local que puede requerir esperar un momento. Comprueba que estén presentes.
 - **Haz un respaldo completo** en la versión vieja ANTES de empezar. Copias automáticas locales no sustituyen respaldos en Archivos/iCloud; podrían perderse al limpiar datos del navegador, y no guardan por separado las fotos/PDF.
 - Las cuentas y métodos de pago son registros manuales: no hay conexión bancaria real.
 - Los ejemplos vienen con movimientos ficticios que pueden borrarse tras probar la app.
@@ -67,3 +67,23 @@ Opciones del informe:
 **Importante:** la vista previa y la impresión directa desde Safari muestran fotografías pequeñas; los PDFs subidos se identifican con un icono. Para colocar la primera página real del PDF como miniatura usa el botón **Descargar PDF con miniaturas**. Esta opción necesita cargar el generador PDF con internet. Los archivos siguen siendo privados en el almacenamiento local o en la nube privada si la configuras, **no** se suben a GitHub. La integración depende del formato: si un comprobante está dañado o protegido, se mostrará una advertencia. Comprueba el documento exportado antes de utilizarlo para fines formales.
 
 **Conservación de datos:** se mantiene la misma clave de almacenamiento local que en 3.1 para permitir una actualización sobre el mismo sitio sin perder los movimientos. Antes de subir nuevos archivos al repositorio, exporta un respaldo completo desde la aplicación actual. Si usas otro repositorio, los datos locales no se transfieren automáticamente entre dominios/rutas distintos; importa un respaldo cuando proceda. No elimines comprobantes originales hasta verificar la copia.
+
+
+## Novedad de la versión 3.3 — Foto del recibo y autocompletado asistido
+
+En **Más → Finanzas → Nuevo movimiento** (ingreso, egreso o inversión):
+
+1. Elige el tipo de movimiento y, en el formulario, selecciona **Adjuntar foto o PDF**. Puedes tomar o elegir una foto del recibo, según las opciones disponibles en Safari.
+2. Con una imagen compatible de hasta 4 MB, la app intenta reconocer localmente **valor, fecha, comercio, método de pago y categoría**, y rellenar esos campos. El tipo de movimiento, la cuenta y el responsable se mantienen bajo tu control.
+3. **Revisa y corrige** el contenido: un recibo borroso, datos de factura, precios de artículos o varios importes pueden confundir el reconocimiento. **Nada se guarda hasta que pulses Guardar.**
+4. La imagen queda adjunta al movimiento y conserva su miniatura en el informe PDF. Los PDF se pueden adjuntar, pero en esta versión **no se autocompletan a partir de PDF**.
+
+**Dependencia:** el lector requiere conexión la primera vez (descarga Tesseract.js y modelos de español desde un proveedor externo). El reconocimiento, una vez cargado, se ejecuta en el navegador y no envía deliberadamente la foto a un servicio de OCR. Puede volver a requerir conexión para cargar el motor. Si falla, se puede registrar manualmente con el archivo adjunto.
+
+**Despliegue seguro:** antes de reemplazar los archivos del repositorio publicado, descarga el **respaldo completo con soportes**. Para probar sin afectar la aplicación habitual, usa otro repositorio y configura GitHub Pages; al usar un origen diferente los datos no aparecerán allí hasta restaurar el respaldo. **No subas recibos, respaldos ni información privada a un repositorio público.**
+
+**Estado de pruebas:** se realizaron pruebas automatizadas del formulario y del analizador de texto; la precisión real del reconocimiento de fotografías, el guardado local de archivos en iOS y el PDF resultante deben verificarse en tu iPhone.
+
+### Administrar un comprobante desde el movimiento
+
+En **Más → Finanzas → Movimientos**, pulsa **Administrar comprobante** para ver la foto ampliada o abrir el PDF y para **reemplazar** o **quitar** únicamente el soporte. Si un registro no tiene archivo, el botón **Adjuntar comprobante** permite añadir uno. Quitar el comprobante conserva la fecha, el importe y los demás datos del movimiento. Cuando existe una copia descargada o sincronizada, no se borra automáticamente.
