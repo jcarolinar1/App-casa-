@@ -57,3 +57,30 @@
 .print-preview-surface .two-ingredients{columns:2}
 .print-preview-surface.mono-print *{background:#fff!important;color:#222!important;border-color:#aaa!important}
 @media(min-width:390px){.print-preview-surface{padding:17px}}
+/* Casa en Orden 3.2: comprobantes compactos junto al movimiento. */
+.report-movement-list{display:grid;gap:9px;margin:10px 0}
+.report-movement{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:10px;padding:11px;border:1px solid #e6d9f3;border-left:4px solid #7941ce;border-radius:10px;background:white;break-inside:avoid;page-break-inside:avoid;align-items:center}
+.report-movement-main{min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:3px}
+.report-movement-main>strong{font-size:12px;color:#332344}
+.report-movement-label{font-size:9px;color:#7034b7;text-transform:uppercase;font-weight:800;letter-spacing:.02em}
+.report-movement-amount{font-size:14px;color:#58299c}
+.report-movement-detail{font-size:10px;line-height:1.45;color:#685c77}
+.report-thumb{width:84px;height:95px;border:1px solid #e2d7ed;border-radius:8px;background:#f5f0fb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;color:#7c4db9;text-align:center;padding:4px}
+.report-thumb img{width:100%;height:70px;object-fit:contain;border-radius:5px;background:white}
+.report-thumb small{font-size:8px;line-height:1.2;color:#684995}
+.report-fileicon{font-size:28px;line-height:1}
+.report-thumb-missing{background:#fbf5f6;color:#b65b6a;border:1px dashed #e4b8c0}
+.report-support-summary{padding:10px;background:#f5ecff;color:#58318e;border-radius:9px;font-size:11px;margin:15px 0}
+.mono-report .report-movement{border-color:#aaa!important;border-left-color:#666!important}
+.mono-report .report-movement-label,.mono-report .report-movement-amount,.mono-report .report-thumb small{color:#333!important}
+.mono-report .report-thumb,.mono-report .report-support-summary{background:#f4f4f4!important;border-color:#bbb!important;color:#333!important}
+@media print{
+ #printArea .fin-report h2{break-after:avoid;page-break-after:avoid}
+ #printArea .report-movement-list{gap:6pt}
+ #printArea .report-movement{grid-template-columns:minmax(0,1fr) 26mm;gap:4mm;padding:3mm;border-radius:2mm;break-inside:avoid!important;page-break-inside:avoid!important}
+ #printArea .report-thumb{width:24mm;height:27mm;break-inside:avoid}
+ #printArea .report-thumb img{height:21mm}
+ #printArea .report-movement-main>strong{font-size:10pt}
+ #printArea .report-movement-detail{font-size:8pt}
+ #printArea .report-support-summary{break-inside:avoid}
+}

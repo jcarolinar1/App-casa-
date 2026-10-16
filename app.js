@@ -127,7 +127,7 @@ function printDoc(html){
 function confirmPrintDoc(){
  reportTheme=$('#generic-print-theme')?.value||reportTheme;
  $('#printArea').className=reportTheme==='economico'?'print-economico':'print-colorido';
- $('#printArea').innerHTML=pendingPrintContent;
+ $('#printArea').innerHTML=($('#generic-doc-preview')?.innerHTML||pendingPrintContent);
  try{window.print()}catch{toast('No se pudo abrir el diálogo de impresión.')} 
 }
 function printMenu(){let ds=Array.from({length:7},(_,i)=>plus(menuDate,i));let html=`<h1>Casa en Orden · Menú familiar</h1><p>Semana desde ${dateText(menuDate)}. Preparado con la despensa registrada.</p>`;for(const kind of ['adulto','bebe']){html+=`<h2>Menú para ${kind==='bebe'?`bebé (${data.babyAge} meses)`:'adultos'}</h2><table><thead><tr><th>Día</th><th>Desayuno</th><th>Almuerzo</th><th>Cena</th></tr></thead><tbody>`;for(const dt of ds){let entries=['desayuno','almuerzo','cena'].map(slot=>{let r=recipes.find(x=>x.id===data.plans[dt]?.[kind]?.[slot]);return `<td>${r?esc(r.name):'—'}</td>`}).join('');html+=`<tr><td>${dateText(dt)}</td>${entries}</tr>`}html+='</tbody></table>'}html+=`<p><small>La alimentación complementaria no sustituye la leche materna o fórmula infantil. Menús orientativos: ajustar texturas y seguridad alimentaria.</small></p><h2>Ingredientes disponibles</h2><p>${data.pantry.map(p=>esc(p.name)+' ('+esc(p.qty)+')').join(' · ')||'Sin registros'}</p>`;printDoc(html)}
@@ -250,10 +250,10 @@ if(cloudConf.auto&&cloudConf.householdId)startCloudPoll();
 
 function moreHub(){return `${header()}${title('Más secciones','Administración completa de tu hogar.')}<div class="stack">${[['💜','Finanzas','Ingresos, gastos, inversiones e informes','finanzas'],['💳','Pagos','Servicios, tarjetas, datos móviles','pagos'],['🧹','Aseo','Tareas, zonas y calendario para imprimir','aseo'],['🏦','Cuentas y saldos','Bancos, efectivo, billeteras e inversiones','cuentas'],['👥','Familia y ajustes','Acceso privado, bebé, respaldos y configuración','familia']].map(([emoji,label,desc,pg])=>`<button class="card row left" data-page="${pg}"><span class="avatar">${emoji}</span><span class="grow"><span class="itemtitle">${label}</span><span class="itemmeta">${desc}</span></span><span>›</span></button>`).join('')}</div>`}
 
-/* Casa en Orden 3.1: 10 mejoras integradas */
+/* Casa en Orden 3.2: comprobantes compactos junto a movimientos */
 const AUDIT_KEY='casa-en-orden-v3-1-autorespaldos';
 let reportTheme='colorido';
-let reportConfig={movement:true,comparison:true,charts:true,supports:true,detail:true};
+let reportConfig={movement:true,comparison:true,charts:true,supports:true,detail:true,inlineThumbs:true,fullAnnexes:false};
 const PERIODS={mes:'Mensual',anio:'Anual'};
 function currentActor(){return cloudConf?.session?.user?.email||localStorage.getItem('casa-en-orden-v3-1-actor')||'Este iPhone'}
 function autoAuditAndSnapshot(){
@@ -312,55 +312,176 @@ function reportSummary(month,scope){let year=month.slice(0,4);const list=data.en
 function previousMonth(mon){const [y,m]=mon.split('-').map(Number);return monthKey(localISO(new Date(y,m-2,1,12)))}
 function variation(current,former){if(!former)return current?'Nuevo':'Sin variación';const pct=Math.round((current-former)/former*100);return `${pct>0?'+':''}${pct}%`}
 function reportOptionsRead(){
- for(const k of ['movement','comparison','charts','supports','detail']){const node=$('#rep_'+k);if(node)reportConfig[k]=node.checked}
+ for(const k of ['movement','comparison','charts','supports','detail','inlineThumbs','fullAnnexes']){const node=$('#rep_'+k);if(node)reportConfig[k]=node.checked}
  reportTheme=$('#rep_theme')?.value||reportTheme;
  financeReportScope=$('#rep_scope')?.value||financeReportScope;
  financeMonth=$('#rep_month')?.value||financeMonth;
 }
 function reportGraphic(label,rows,limit=5){const max=Math.max(1,...rows.map(x=>x[1]));return `<div class="graph-report"><h3>${esc(label)}</h3>${rows.length?rows.slice(0,limit).map(([name,amount])=>`<div class="graph-row"><span>${esc(name)}</span><strong>${currency(amount)}</strong></div><div class="graph-track"><div style="width:${Math.max(3,amount/max*100)}%" class="graph-bar"></div></div>`).join(''):'<p>No hay gastos en este período.</p>'}</div>`}
+function supportMiniHtml(x){
+ if(!x.fileId)return `<div class="report-thumb report-thumb-missing"><span>∅</span><small>Sin soporte</small></div>`;
+ return `<div class="report-thumb" data-fileid="${esc(x.fileId)}"><span class="report-fileicon">📎</span><small>Ver soporte</small></div>`;
+}
+async function hydrateReportThumbs(surface){
+ if(!surface)return;
+ const targets=[...surface.querySelectorAll('.report-thumb[data-fileid]')];
+ for(const box of targets){
+  // No leer ni compartir archivos fuera del almacenamiento privado del hogar.
+  if(!box.isConnected)continue;
+  try{const f=await getFile(box.dataset.fileid);
+    if(!f){box.innerHTML='<span>!</span><small>No disponible</small>';continue}
+    if((f.type||'').startsWith('image/')){const src=await blobToDataUrl(f.blob);box.innerHTML=`<img alt="Miniatura del comprobante" src="${src}"><small>Fotografía</small>`}
+    else if(f.type==='application/pdf'||/\.pdf$/i.test(f.name||'')){box.innerHTML='<span class="report-fileicon">▤</span><small>PDF · 1ª página en descarga</small>'}
+    else box.innerHTML='<span>!</span><small>No compatible</small>';
+  }catch(e){box.innerHTML='<span>!</span><small>No disponible</small>'}
+ }
+}
 function reportPaper(){const s=reportSummary(financeMonth,financeReportScope),prev=reportSummary(previousMonth(financeMonth),'mes'),label=financeReportScope==='anio'?financeMonth.slice(0,4):monthLabel(financeMonth);
  let html=`<div class="fin-report report-modern ${reportTheme==='economico'?'mono-report':''}"><header><div class="report-brand">⌂ CASA EN ORDEN · HOGAR</div><h1>Informe financiero</h1><p>${esc(label)} · ${PERIODS[financeReportScope]} · ${esc(new Date().toLocaleDateString('es-CO'))}</p></header><div class="report-stats"><div class="income"><small>INGRESOS</small><b>${currency(s.ingreso)}</b></div><div class="expense"><small>EGRESOS</small><b>${currency(s.egreso)}</b></div><div class="invest"><small>INVERSIONES</small><b>${currency(s.inversion)}</b></div><div><small>DISPONIBLE ESTIMADO</small><b>${currency(s.ingreso-s.egreso-s.inversion)}</b></div></div><p class="small">Disponible = ingresos − egresos − inversiones apartadas. No equivale necesariamente al saldo bancario.</p>`;
  if(reportConfig.comparison&&financeReportScope==='mes')html+=`<h2>Comparación con el mes anterior</h2><div class="report-compare"><div>Ingresos <b>${variation(s.ingreso,prev.ingreso)}</b></div><div>Egresos <b>${variation(s.egreso,prev.egreso)}</b></div><div>Inversiones <b>${variation(s.inversion,prev.inversion)}</b></div></div>`;
  if(reportConfig.charts){html+='<h2>¿Dónde se utilizó el dinero?</h2>';html+=reportGraphic('Por categoría',s.category)+reportGraphic('Por método de pago',s.method)+reportGraphic('Por responsable',s.responsible)}
- if(reportConfig.movement){html+=`<h2>Detalle de movimientos (${s.list.length})</h2><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Valor</th></tr></thead><tbody>${s.list.length?s.list.map(x=>`<tr><td>${dateText(x.date)}</td><td>${esc(x.type)}</td><td><strong>${esc(x.name)}</strong>${reportConfig.detail?`<p class="report-mini">${esc(x.category||'—')} · ${esc(x.method||'—')} · ${esc(accountName(x.accountId))} · ${esc(x.person||'—')}</p>`:''}</td><td>${currency(x.amount)}</td></tr>`).join(''):'<tr><td colspan="4">No hay movimientos en este período.</td></tr>'}</tbody></table>`}
- if(reportConfig.supports){let docs=s.list.filter(x=>x.fileId);html+=`<h2>Comprobantes y anexos (${docs.length})</h2>${docs.length?docs.map((x,i)=>`<div class="report-attachment"><strong>Anexo ${i+1} · ${esc(x.name)}</strong><p>${dateText(x.date)} · ${currency(x.amount)} · ${esc(x.person||'—')}</p><small>Archivo privado vinculado al movimiento. Se incorpora al PDF final cuando el archivo está disponible.</small></div>`).join(''):'<p>No se adjuntaron comprobantes en este período.</p>'}<p class="small">${s.list.filter(x=>!x.fileId&&['egreso','inversion'].includes(x.type)).length} egresos o inversiones sin soporte. Revisa antes de cerrar.</p>`}
+ if(reportConfig.movement){
+  html+=`<h2>Movimientos y comprobantes (${s.list.length})</h2>`;
+  if(!s.list.length)html+='<p>No hay movimientos en este período.</p>';
+  else if(reportConfig.supports&&reportConfig.inlineThumbs){
+   html+='<div class="report-movement-list">'+s.list.map(x=>`<div class="report-movement"><div class="report-movement-main"><div class="report-movement-label">${dateText(x.date)} · ${esc(x.type.toUpperCase())}</div><strong>${esc(x.name)}</strong><b class="report-movement-amount">${currency(x.amount)}</b>${reportConfig.detail?`<div class="report-movement-detail">Método: ${esc(x.method||'No indicado')}<br>Cuenta: ${esc(accountName(x.accountId))}<br>Responsable: ${esc(x.person||'Sin indicar')}${x.category?` · ${esc(x.category)}`:''}</div>`:''}</div>${supportMiniHtml(x)}</div>`).join('')+'</div>';
+  }else{
+   html+=`<table><thead><tr><th>Fecha</th><th>Tipo</th><th>Concepto</th><th>Valor</th></tr></thead><tbody>${s.list.map(x=>`<tr><td>${dateText(x.date)}</td><td>${esc(x.type)}</td><td><strong>${esc(x.name)}</strong>${reportConfig.detail?`<p class="report-mini">${esc(x.category||'—')} · ${esc(x.method||'—')} · ${esc(accountName(x.accountId))} · ${esc(x.person||'—')}</p>`:''}</td><td>${currency(x.amount)}</td></tr>`).join('')}</tbody></table>`;
+  }
+ }
+ if(reportConfig.supports){
+  const count=s.list.filter(x=>x.fileId).length,missing=s.list.filter(x=>!x.fileId&&['egreso','inversion'].includes(x.type)).length;
+  html+=`<p class="report-support-summary">📎 ${count} movimiento(s) con soporte · ${missing} egreso(s) o inversión(es) sin soporte.</p>`;
+  if(reportConfig.fullAnnexes)html+=`<h2>Anexos completos opcionales (${count})</h2><p class="small">Los archivos originales se añadirán después de los movimientos en el PDF descargado. En la impresión de Safari solo se añadirán fotografías compatibles.</p>`;
+ }
  const closing=(data.closings||[]).find(x=>x.month===financeMonth);if(closing&&financeReportScope==='mes')html+=`<p class="notice">Mes cerrado el ${esc(new Date(closing.closedAt).toLocaleDateString('es-CO'))}. Mercado ${currency(closing.marketCost||0)} · Facturas pendientes ${closing.unpaidBills??0} · Aseo completado ${closing.chores?.done??0}/${closing.chores?.all??0}. Revisa correcciones posteriores.</p>`;
- return html+`<footer><small>Casa en Orden 3.1 · Documento familiar · Información registrada por sus integrantes</small></footer></div>`;
+ return html+`<footer><small>Casa en Orden 3.2 · Documento familiar · Información registrada por sus integrantes</small></footer></div>`;
 }
 function showReportPreview(){
  const monthChoices=Array.from({length:19},(_,i)=>{const d=new Date();d.setMonth(d.getMonth()-i);return monthKey(localISO(d))});if(!monthChoices.includes(financeMonth))monthChoices.unshift(financeMonth);
  const selectMonth=`<select id="rep_month">${monthChoices.map(m=>`<option value="${m}" ${financeMonth===m?'selected':''}>${esc(monthLabel(m))}</option>`).join('')}</select>`;
- const fields=['comparison','charts','movement','detail','supports'].map((k,i)=>`<label class="repcheck"><input id="rep_${k}" type="checkbox" ${reportConfig[k]?'checked':''}> ${['Comparación con mes anterior','Gráficos por categoría, método y responsable','Lista de movimientos','Detalles de métodos y responsables','Soportes adjuntos'][i]}</label>`).join('');
- $('#modal').innerHTML=overlay('Vista previa antes de descargar',`<div class="notice">Revisa el informe, elige el período y activa lo que quieres incluir. Tus archivos personales no se publican en GitHub.</div><div id="reportPreviewConfig"><div class="grid-reports"><div class="field"><label for="rep_scope">Período</label><select id="rep_scope"><option value="mes" ${financeReportScope==='mes'?'selected':''}>Mensual</option><option value="anio" ${financeReportScope==='anio'?'selected':''}>Anual</option></select></div><div class="field"><label for="rep_month">Mes de referencia</label>${selectMonth}</div><div class="field"><label for="rep_theme">Estilo del documento</label><select id="rep_theme"><option value="colorido" ${reportTheme==='colorido'?'selected':''}>Morado y colorido</option><option value="economico" ${reportTheme==='economico'?'selected':''}>Económico para imprimir</option></select></div></div><div class="report-choice">${fields}</div></div><div class="report-scroll" id="report-preview-paper">${reportPaper()}</div><div class="btn-row" style="margin:12px 0">${btn('⬇ Descargar PDF con anexos','report-download','','')}${btn('🖨️ Imprimir / PDF Safari','report-print')}</div><div class="notice warning">Para integrar comprobantes PDF originales usa «Descargar PDF con anexos» con internet. Safari imprime las fotos disponibles, pero no incorpora automáticamente las páginas PDF adjuntas.</div>`)
+ const fields=['comparison','charts','movement','detail','supports','inlineThumbs','fullAnnexes'].map((k,i)=>`<label class="repcheck"><input id="rep_${k}" type="checkbox" ${reportConfig[k]?'checked':''}> ${['Comparación con el mes anterior','Gráficos por categoría, método y responsable','Listado de movimientos','Mostrar métodos, cuentas y responsables','Incluir comprobantes','Miniatura junto a cada movimiento (recomendado)','Anexos completos al final (opcional)'][i]}</label>`).join('');
+ $('#modal').innerHTML=overlay('Vista previa antes de descargar',`<div class="notice">Cada soporte pequeño quedará junto a su movimiento. Las imágenes y PDF se procesan localmente; no se publican en GitHub.</div><div id="reportPreviewConfig"><div class="grid-reports"><div class="field"><label for="rep_scope">Período</label><select id="rep_scope"><option value="mes" ${financeReportScope==='mes'?'selected':''}>Mensual</option><option value="anio" ${financeReportScope==='anio'?'selected':''}>Anual</option></select></div><div class="field"><label for="rep_month">Mes de referencia</label>${selectMonth}</div><div class="field"><label for="rep_theme">Estilo del documento</label><select id="rep_theme"><option value="colorido" ${reportTheme==='colorido'?'selected':''}>Morado y colorido</option><option value="economico" ${reportTheme==='economico'?'selected':''}>Económico para imprimir</option></select></div></div><div class="report-choice">${fields}</div></div><div class="report-scroll" id="report-preview-paper">${reportPaper()}</div><div class="btn-row" style="margin:12px 0">${btn('⬇ Descargar PDF con miniaturas','report-download','','')}${btn('🖨️ Imprimir / PDF Safari','report-print')}</div><div class="notice warning">El PDF descargado muestra la primera página de un comprobante PDF como miniatura cuando el formato permite incrustarla. En la impresión de Safari, los PDF adjuntos se indican mediante su icono. Conserva los originales con tu copia de seguridad.</div>`);
+ hydrateReportThumbs($('#report-preview-paper'));
 }
-function updateReportPreview(){reportOptionsRead();const t=$('#report-preview-paper');if(t)t.innerHTML=reportPaper()}
-async function printReport(){reportOptionsRead();let html=reportPaper();if(reportConfig.supports){for(const r of reportSummary(financeMonth,financeReportScope).list.filter(x=>x.fileId)){const file=await getFile(r.fileId).catch(()=>null);if(file?.type?.startsWith('image/')){const src=await blobToDataUrl(file.blob);html+=`<div class="receipt"><h2>${esc(r.name)} · ${dateText(r.date)}</h2><img src="${src}" style="max-width:100%;max-height:650px"></div>`}else if(file){html+=`<p>Comprobante PDF original de «${esc(r.name)}» no incorporado a la impresión de Safari. Usa el generador PDF con anexos.</p>`}else html+=`<p>ADVERTENCIA: falta soporte de «${esc(r.name)}».</p>`}}
- printDoc(html)
+function updateReportPreview(){reportOptionsRead();const t=$('#report-preview-paper');if(t){t.innerHTML=reportPaper();hydrateReportThumbs(t)}}
+async function printReport(){reportOptionsRead();let html=reportPaper();
+ if(reportConfig.supports&&reportConfig.fullAnnexes){for(const r of reportSummary(financeMonth,financeReportScope).list.filter(x=>x.fileId)){
+  const file=await getFile(r.fileId).catch(()=>null);
+  if(file?.type?.startsWith('image/')){const src=await blobToDataUrl(file.blob);html+=`<div class="receipt"><h2>${esc(r.name)} · ${dateText(r.date)}</h2><img src="${src}" style="max-width:100%;max-height:650px"></div>`}
+  else if(file){html+=`<p>Para incorporar el comprobante PDF original de «${esc(r.name)}», utiliza «Descargar PDF con miniaturas».</p>`}
+  else html+=`<p>ADVERTENCIA: falta soporte de «${esc(r.name)}».</p>`;
+ }}
+ printDoc(html);
+ await hydrateReportThumbs($('#generic-doc-preview'));
+ const preview=$('#generic-doc-preview');if(preview)pendingPrintContent=preview.innerHTML;
 }
+
 async function downloadReport(){reportOptionsRead();try{
  const L=await loadPdfLibrary(),{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),regular=await doc.embedFont(StandardFonts.Helvetica),bold=await doc.embedFont(StandardFonts.HelveticaBold);
- const c=reportTheme==='economico'?{purple:rgb(.13,.13,.13),green:rgb(.2,.2,.2),red:rgb(.4,.4,.4),gray:rgb(.42,.42,.42)}:{purple:rgb(.45,.21,.77),green:rgb(.12,.52,.36),red:rgb(.77,.25,.36),gray:rgb(.42,.38,.49)};
+ const c=reportTheme==='economico'?{purple:rgb(.13,.13,.13),green:rgb(.2,.2,.2),red:rgb(.4,.4,.4),gray:rgb(.42,.42,.42),pale:rgb(.96,.96,.96)}:{purple:rgb(.45,.21,.77),green:rgb(.12,.52,.36),red:rgb(.77,.25,.36),gray:rgb(.42,.38,.49),pale:rgb(.96,.93,1)};
  const WIDTH=595.3,HEIGHT=841.9,s=reportSummary(financeMonth,financeReportScope),prior=reportSummary(previousMonth(financeMonth),'mes');let pg,y=0,created=[];
+ const fails=[],included=[],images=new Map();
  function page(){pg=doc.addPage([WIDTH,HEIGHT]);created.push(pg);pg.drawRectangle({x:0,y:HEIGHT-46,width:WIDTH,height:46,color:c.purple});pg.drawText('CASA EN ORDEN  |  INFORME DEL HOGAR',{x:36,y:HEIGHT-29,size:12,font:bold,color:rgb(1,1,1)});y=HEIGHT-73;}
- function textLine(text,size=10,color=c.purple,isBold=false,indent=0){const f=isBold?bold:regular;let words=pdfSafeText(text).split(/\s+/),part='';function draw(str){if(y<65)page();pg.drawText(str,{x:38+indent,y,size,font:f,color});y-=size+6}
- for(let w of words){const trial=part?part+' '+w:w;if(f.widthOfTextAtSize(trial,size)>WIDTH-78-indent&&part){draw(part);part=w}else part=trial}if(part)draw(part)}
- function section(h){if(y<130)page();y-=6;textLine(h,13,c.purple,true);y-=3}
- function bars(title,rows){section(title);let max=Math.max(1,...rows.map(x=>x[1]));if(!rows.length){textLine('Sin datos registrados',10,c.gray);return}for(const [name,amount] of rows.slice(0,5)){if(y<80)page();textLine(`${name}: ${currency(amount)}`,9,c.gray);pg.drawRectangle({x:39,y:y+5,width:Math.max(2,450*amount/max),height:7,color:c.purple});y-=13}}
- page();textLine('INFORME FINANCIERO '+(financeReportScope==='anio'?'ANUAL':'MENSUAL'),20,c.purple,true);textLine(financeReportScope==='anio'?financeMonth.slice(0,4):monthLabel(financeMonth),12,c.gray,true);y-=12;
- for(const [k,v,cl] of [['INGRESOS',s.ingreso,c.green],['EGRESOS',s.egreso,c.red],['INVERSIONES',s.inversion,c.purple],['DISPONIBLE ESTIMADO',s.ingreso-s.egreso-s.inversion,c.purple]])textLine(k+'   '+currency(v),13,cl,true);
- textLine('El disponible es orientativo. No sustituye el saldo bancario.',9,c.gray);y-=6;
- if(reportConfig.comparison&&financeReportScope==='mes'){section('COMPARACION CON EL MES ANTERIOR');textLine('Ingresos '+variation(s.ingreso,prior.ingreso)+'  |  Egresos '+variation(s.egreso,prior.egreso),10,c.gray);textLine('Inversiones '+variation(s.inversion,prior.inversion),10,c.gray)}
+ function line(text,size=10,color=c.gray,isBold=false,x=38,maxWidth=WIDTH-76){
+  const f=isBold?bold:regular;let words=pdfSafeText(text).split(/\s+/),part='';const lines=[];
+  for(let w of words){let trial=part?part+' '+w:w;if(f.widthOfTextAtSize(trial,size)>maxWidth&&part){lines.push(part);part=w}else part=trial}
+  if(part)lines.push(part);
+  for(const l of lines){if(y<66)page();pg.drawText(l,{x,y,size,font:f,color});y-=size+6}
+ }
+ function section(h){if(y<140)page();y-=7;line(h,13,c.purple,true);y-=5}
+ function bars(h,rows){section(h);let max=Math.max(1,...rows.map(x=>x[1]));if(!rows.length){line('Sin datos registrados',10,c.gray);return}for(const [name,amount] of rows.slice(0,5)){if(y<82)page();line(name+': '+currency(amount),9,c.gray);pg.drawRectangle({x:39,y:y+5,width:Math.max(2,Math.min(450,450*amount/max)),height:7,color:c.purple});y-=13}}
+ function fitText(v,max=335,size=10,font=regular){const str=pdfSafeText(v);if(font.widthOfTextAtSize(str,size)<=max)return str;let l=str;while(l.length&&font.widthOfTextAtSize(l+'...',size)>max)l=l.slice(0,-1);return l+'...'}
+ async function embedSupport(row){
+  if(!row.fileId)return {kind:'missing'};
+  let f;try{f=await getFile(row.fileId)}catch(e){return {kind:'error',message:String(e.message||e)}}
+  if(!f)return {kind:'error',message:'soporte no encontrado'};
+  if(images.has(row.fileId))return images.get(row.fileId);
+  try{let result;
+   if(f.type==='application/pdf'||/\.pdf$/i.test(f.name||'')){
+    const embedded=await doc.embedPdf(await f.blob.arrayBuffer(),[0]);result={kind:'pdf',page:embedded[0],name:f.name};
+   }else if((f.type||'').startsWith('image/')||/\.(jpe?g|png|webp|heic|heif)$/i.test(f.name||'')){
+    const bytes=await imageToJpegBytes(f.blob);result={kind:'image',image:await doc.embedJpg(bytes),name:f.name};
+   }else return {kind:'error',message:'formato de soporte no compatible'};
+   images.set(row.fileId,result);return result;
+  }catch(e){return {kind:'error',message:String(e.message||e)}}
+ }
+ function drawCompactMovement(row,asset){
+  const h=105,top=y,bot=y-h,outerX=37,outerW=522,thumbX=472,thumbW=76,thumbH=77,thumbY=bot+14;
+  pg.drawRectangle({x:outerX,y:bot,width:outerW,height:h,color:rgb(1,1,1),borderColor:c.pale,borderWidth:1});
+  pg.drawRectangle({x:outerX,y:bot,width:3,height:h,color:c.purple});
+  pg.drawText(fitText(dateText(row.date)+'  |  '+row.type.toUpperCase(),380,9,bold),{x:47,y:top-16,font:bold,size:9,color:c.purple});
+  pg.drawText(fitText(row.name,410,11,bold),{x:47,y:top-34,font:bold,size:11,color:rgb(.19,.14,.24)});
+  pg.drawText(fitText(currency(row.amount),355,12,bold),{x:47,y:top-51,font:bold,size:12,color:row.type==='ingreso'?c.green:row.type==='egreso'?c.red:c.purple});
+  if(reportConfig.detail){
+    pg.drawText(fitText('Metodo: '+(row.method||'No indicado'),395,8,regular),{x:47,y:top-66,font:regular,size:8,color:c.gray});
+    pg.drawText(fitText('Cuenta: '+accountName(row.accountId)+'  |  Responsable: '+(row.person||'Sin indicar'),395,8,regular),{x:47,y:top-80,font:regular,size:8,color:c.gray});
+  }
+  pg.drawRectangle({x:thumbX,y:thumbY,width:thumbW,height:thumbH,color:c.pale,borderColor:c.purple,borderWidth:.5});
+  if(asset.kind==='image'||asset.kind==='pdf'){
+   const src=asset.kind==='image'?asset.image:asset.page;
+   const iw=src.width,ih=src.height,scale=Math.min((thumbW-8)/iw,(thumbH-20)/ih);
+   const dx=thumbX+(thumbW-iw*scale)/2,dy=thumbY+16+(thumbH-20-ih*scale)/2;
+   if(asset.kind==='image')pg.drawImage(src,{x:dx,y:dy,width:iw*scale,height:ih*scale});
+   else pg.drawPage(src,{x:dx,y:dy,width:iw*scale,height:ih*scale});
+   pg.drawText(asset.kind==='pdf'?'PDF · pag. 1':'Fotografia',{x:thumbX+5,y:thumbY+5,size:7,font:regular,color:c.purple});
+  }else{
+   pg.drawText(asset.kind==='missing'?'SIN SOPORTE':'NO DISPONIBLE',{x:thumbX+5,y:thumbY+36,size:7,font:bold,color:c.red});
+   if(asset.kind==='error')pg.drawText('Revisar archivo',{x:thumbX+6,y:thumbY+21,size:7,font:regular,color:c.gray});
+  }
+  y=bot-10;
+ }
+ page();line('INFORME FINANCIERO '+(financeReportScope==='anio'?'ANUAL':'MENSUAL'),19,c.purple,true);line(financeReportScope==='anio'?financeMonth.slice(0,4):monthLabel(financeMonth),12,c.gray,true);y-=12;
+ for(const [k,v,cl] of [['INGRESOS',s.ingreso,c.green],['EGRESOS',s.egreso,c.red],['INVERSIONES',s.inversion,c.purple],['DISPONIBLE ESTIMADO',s.ingreso-s.egreso-s.inversion,c.purple]])line(k+'   '+currency(v),13,cl,true);
+ line('El disponible es orientativo. No sustituye el saldo bancario.',9,c.gray);y-=6;
+ if(reportConfig.comparison&&financeReportScope==='mes'){section('COMPARACION CON EL MES ANTERIOR');line('Ingresos '+variation(s.ingreso,prior.ingreso)+'  |  Egresos '+variation(s.egreso,prior.egreso),10,c.gray);line('Inversiones '+variation(s.inversion,prior.inversion),10,c.gray)}
  if(reportConfig.charts){bars('GASTOS POR CATEGORIA',s.category);bars('GASTOS POR METODO DE PAGO',s.method);bars('GASTOS POR RESPONSABLE',s.responsible)}
- if(reportConfig.movement){section('MOVIMIENTOS ('+s.list.length+')');if(!s.list.length)textLine('No hay movimientos.',10,c.gray);for(const x of s.list){if(y<120)page();textLine(dateText(x.date)+'  '+x.type.toUpperCase()+'  '+currency(x.amount),10,c.purple,true);textLine(x.name+'  /  '+(x.category||'Sin categoria'),10,c.gray);if(reportConfig.detail){textLine('Metodo: '+(x.method||'No indicado')+'  | Cuenta: '+accountName(x.accountId),9,c.gray);textLine('Responsable: '+(x.person||'Sin indicar'),9,c.gray)}y-=3}}
- const fails=[],included=[];
- if(reportConfig.supports){section('ANEXOS Y SOPORTES');for(const [n,x] of s.list.filter(x=>x.fileId).entries()){let f;try{f=await getFile(x.fileId)}catch{}if(!f){fails.push(x.name+': soporte no encontrado');continue}try{if(f.type==='application/pdf'||/\.pdf$/i.test(f.name)){let d=await PDFDocument.load(await f.blob.arrayBuffer());let copies=await doc.copyPages(d,d.getPageIndices());copies.forEach(c=>doc.addPage(c));included.push(x.name+' ('+copies.length+' paginas)')}
- else if((f.type||'').startsWith('image/')){const bytes=await imageToJpegBytes(f.blob),img=await doc.embedJpg(bytes);const a=doc.addPage([WIDTH,HEIGHT]);a.drawRectangle({x:0,y:HEIGHT-47,width:WIDTH,height:47,color:c.purple});a.drawText(pdfSafeText('ANEXO '+(n+1)+': '+x.name).slice(0,72),{x:35,y:HEIGHT-28,font:bold,size:11,color:rgb(1,1,1)});const fit=img.scale(Math.min(520/img.width,710/img.height,1));a.drawImage(img,{x:(WIDTH-fit.width)/2,y:HEIGHT-72-fit.height,width:fit.width,height:fit.height});included.push(x.name+' (fotografia)')}else fails.push(x.name+': formato no compatible');}catch(e){fails.push(x.name+': '+e.message.slice(0,90))}}
- const missingCount=s.list.filter(x=>['egreso','inversion'].includes(x.type)&&!x.fileId).length;if(missingCount)textLine('Movimientos sin soporte: '+missingCount,9,c.red);
- if(fails.length){page();section('AVISO: SOPORTES NO INCLUIDOS');fails.forEach(x=>textLine(x,10,c.red))}}
- created.forEach((p,i)=>{p.drawText('Casa en Orden 3.1  |  Pagina '+(i+1),{x:38,y:32,size:8,font:regular,color:c.gray})});
- const bytes=await doc.save();downloadBlob(new Blob([bytes],{type:'application/pdf'}),`Casa-en-Orden-Informe-${financeReportScope==='anio'?financeMonth.slice(0,4):financeMonth}.pdf`);toast('PDF generado: '+s.list.length+' movimientos y '+included.length+' anexos');if(fails.length)alert('Se generó el PDF, pero estos soportes no pudieron incluirse:\n'+fails.join('\n'));
- }catch(e){alert('No se pudo crear el informe PDF: '+e.message+'\nPuedes usar la versión imprimible desde Safari.')}
+ if(reportConfig.movement){
+  if(reportConfig.supports&&reportConfig.inlineThumbs){
+   // Cada ficha tiene su propia miniatura. Inicia en hoja nueva para no partir el titulo.
+   if(y<HEIGHT-190)page();
+   section('MOVIMIENTOS Y COMPROBANTES ('+s.list.length+')');
+   for(const row of s.list){if(y<176)page();
+    const asset=await embedSupport(row);
+    if(asset.kind==='error')fails.push(row.name+': '+asset.message.slice(0,90));
+    if(asset.kind==='image'||asset.kind==='pdf')included.push(row.name);
+    drawCompactMovement(row,asset);
+   }
+  }else{
+   section('MOVIMIENTOS ('+s.list.length+')');
+   if(!s.list.length)line('No hay movimientos.',10,c.gray);
+   for(const x of s.list){if(y<120)page();line(dateText(x.date)+'  '+x.type.toUpperCase()+'  '+currency(x.amount),10,c.purple,true);line(x.name+' / '+(x.category||'Sin categoria'),10,c.gray);if(reportConfig.detail){line('Metodo: '+(x.method||'No indicado')+'  |  Cuenta: '+accountName(x.accountId),9,c.gray);line('Responsable: '+(x.person||'Sin indicar'),9,c.gray)}y-=3}
+  }
+ }
+ if(reportConfig.supports){
+  const missingCount=s.list.filter(x=>['egreso','inversion'].includes(x.type)&&!x.fileId).length;
+  if(y<115)page();section('CONTROL DE SOPORTES');line('Con soporte: '+s.list.filter(x=>x.fileId).length+'  |  Sin soporte (egresos/inversiones): '+missingCount,9,c.gray);
+  if(reportConfig.fullAnnexes){
+   section('ANEXOS COMPLETOS OPCIONALES');
+   for(const [n,row] of s.list.filter(x=>x.fileId).entries()){
+    let f;try{f=await getFile(row.fileId)}catch{}
+    if(!f){fails.push(row.name+': falta soporte original');continue}
+    try{
+     if(f.type==='application/pdf'||/\.pdf$/i.test(f.name||'')){
+      const src=await PDFDocument.load(await f.blob.arrayBuffer());const pages=await doc.copyPages(src,src.getPageIndices());pages.forEach(x=>doc.addPage(x));
+     }else if((f.type||'').startsWith('image/')){
+      const asset=await embedSupport(row);if(asset.kind!=='image')throw Error('imagen incompatible');
+      const a=doc.addPage([WIDTH,HEIGHT]);a.drawRectangle({x:0,y:HEIGHT-47,width:WIDTH,height:47,color:c.purple});a.drawText(fitText('ANEXO '+(n+1)+': '+row.name,500,11,bold),{x:35,y:HEIGHT-29,size:11,font:bold,color:rgb(1,1,1)});
+      const img=asset.image,scale=Math.min(520/img.width,710/img.height,1);a.drawImage(img,{x:(WIDTH-img.width*scale)/2,y:HEIGHT-70-img.height*scale,width:img.width*scale,height:img.height*scale});
+     }
+    }catch(e){fails.push(row.name+': anexo grande: '+String(e.message||e).slice(0,90))}
+   }
+  }
+ }
+ const uniqueFails=[...new Set(fails)];
+ if(uniqueFails.length){page();section('AVISO: SOPORTES QUE REQUIEREN REVISION');uniqueFails.forEach(x=>line(x,10,c.red))}
+ created.forEach((p,i)=>p.drawText('Casa en Orden 3.2  |  Pagina '+(i+1),{x:38,y:32,size:8,font:regular,color:c.gray}));
+ const bytes=await doc.save();downloadBlob(new Blob([bytes],{type:'application/pdf'}),`Casa-en-Orden-${financeReportScope==='anio'?financeMonth.slice(0,4):financeMonth}-mini-comprobantes.pdf`);
+ toast('PDF generado: '+s.list.length+' movimientos y '+included.length+' miniaturas.');
+ if(uniqueFails.length)alert('Se generó el informe, pero revisa estos archivos:\n'+uniqueFails.join('\n'));
+ }catch(e){alert('No se pudo crear el informe PDF: '+e.message+'\nPuedes usar la impresión de Safari o intentar con conexión.');}
 }
+
 function choreMonthSummary(mon){let all=0,done=0;const [yr,m]=mon.split('-').map(Number);const limit=new Date(yr,m,0).getDate();for(let d=1;d<=limit;d++){const day=mon+'-'+pad(d);for(const c of data.chores){if(dueTask(c,day)){all++;if((c.completed||[]).includes(day))done++}}}return {done,all};}
 function closeMonthForm(){const month=financeMonth||monthKey(today());const existing=(data.closings||[]).find(x=>x.month===month);const s=reportSummary(month,'mes');
  $('#modal').innerHTML=overlay('Cierre mensual del hogar',`<div class="notice">Antes de cerrar, comprueba las facturas pagadas y los comprobantes. El cierre guarda los totales como referencia y se puede volver a generar si corriges algo.</div><div class="card"><strong>${esc(monthLabel(month))}</strong><div class="overview"><div class="card">Ingresos<br><b>${currency(s.ingreso)}</b></div><div class="card">Egresos<br><b>${currency(s.egreso)}</b></div><div class="card">Inversiones<br><b>${currency(s.inversion)}</b></div></div><p class="small muted">${s.list.length} movimientos, ${s.list.filter(x=>x.fileId).length} soportes, ${data.bills.filter(x=>isPaid(x,month+'-15')).length} pagos marcados. Mercado: ${currency(s.list.filter(x=>x.type==='egreso'&&categoryForExpense(x)==='Mercado').reduce((a,b)=>a+Number(b.amount||0),0))}. Facturas pendientes: ${data.bills.filter(x=>!isPaid(x,month+'-15')).length}. Aseo realizado: ${choreMonthSummary(month).done} de ${choreMonthSummary(month).all} tareas programadas.</p></div>${existing?`<div class="notice">Cerrado anteriormente: ${esc(new Date(existing.closedAt).toLocaleString('es-CO'))}</div>`:''}<div class="btn-row">${btn(existing?'Actualizar cierre':'Confirmar cierre','save-closing','','')}${existing?btn('Reabrir','delete-closing',month):''}</div>`)

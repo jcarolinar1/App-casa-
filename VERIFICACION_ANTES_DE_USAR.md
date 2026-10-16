@@ -1,4 +1,4 @@
-# Prueba rápida de Casa en Orden 3.1
+# Prueba rápida de Casa en Orden 3.2
 
 1. **Finanzas**: añade un ingreso y un egreso con cuenta, método, responsable y soporte; comprueba el saldo.
 2. **Inversión**: crea una inversión y verifica que figure separada del gasto y del ingreso.
@@ -12,3 +12,14 @@
 10. **Familia (solo si se configura nube privada)**: registra dos cuentas con distintos correos, invita al segundo participante, prueba lectura/escritura autorizada y también que el rol de solo lectura no pueda guardar.
 
 Las pruebas deben hacerse primero con datos ficticios, sin comprobantes personales. La versión antigua permanece instalada.
+
+
+## Verificar miniaturas de la 3.2
+
+1. Registra un movimiento con foto y otro con PDF de una sola página.
+2. Abre Finanzas → Vista previa y PDF y verifica que **Miniatura junto a cada movimiento** esté activada y **Anexos completos** desactivada.
+3. Comprueba que los movimientos sin archivo muestren «Sin soporte».
+4. Descarga el PDF con miniaturas y revisa que la foto esté pequeña al lado de su gasto y la primera página PDF aparezca en miniatura al lado del suyo.
+5. Prueba la opción Anexos completos activada; debe incluir al final las páginas originales. Desactívala y comprueba que desaparezcan las páginas adicionales.
+6. Prueba «Económico para imprimir» y comprueba saltos entre páginas sin cortar tarjetas.
+7. Confirma que la aplicación anterior y los datos/soportes previos siguen accesibles antes de usar la actualización con registros importantes.
