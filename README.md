@@ -1,4 +1,7 @@
-# Casa en Orden 3.3 💜 · Mini-comprobantes y lectura asistida de recibos (versión de prueba)
+# Casa en Orden 3.4 💜 · Mini-comprobantes y lectura asistida de recibos (versión de prueba)
+
+
+**Novedad principal:** en Inicio → **Preparar modo sin internet** podrás guardar los archivos básicos de la app para entrar después desde el icono de iPhone sin conexión. Mercado, despensa, finanzas, agenda, comprobantes locales y versión imprimible funcionan localmente. La lectura automática de recibos y la generación avanzada de PDF pueden necesitar archivos previamente descargados, y la nube siempre necesita conexión. Lee `PRUEBA_SIN_INTERNET.md`.
 
 Aplicación web instalable en iPhone desde Safari, diseñada para funcionar como PWA. **No es una app de la App Store ni actualiza automáticamente la instalada**. Mantiene la identidad morada de Casa en Orden 3.0.
 
@@ -87,3 +90,15 @@ En **Más → Finanzas → Nuevo movimiento** (ingreso, egreso o inversión):
 ### Administrar un comprobante desde el movimiento
 
 En **Más → Finanzas → Movimientos**, pulsa **Administrar comprobante** para ver la foto ampliada o abrir el PDF y para **reemplazar** o **quitar** únicamente el soporte. Si un registro no tiene archivo, el botón **Adjuntar comprobante** permite añadir uno. Quitar el comprobante conserva la fecha, el importe y los demás datos del movimiento. Cuando existe una copia descargada o sincronizada, no se borra automáticamente.
+
+## Versión 3.4 · Trabajo sin internet (modo local)
+
+**Qué sí funciona sin internet tras la primera preparación en Safari con conexión:** abrir la aplicación, consultar y modificar mercado, despensa, menús y recetas, agenda, pagos, finanzas e inversiones; agregar fotos o archivos PDF a movimientos; consultar soportes ya guardados localmente; exportar un respaldo y generar documentos con **Imprimir / PDF Safari**. Todo se guarda en el **iPhone**, sin publicarse en el repositorio.
+
+**Qué debes preparar:** abre una vez Casa en Orden 3.4 en GitHub Pages con internet; en Inicio pulsa **Preparar modo sin internet → Preparar modo sin internet**. Espera la confirmación. Después prueba **modo avión**, cierra la PWA y ábrela de nuevo desde su icono. No borres los datos de Safari y exporta periódicamente un respaldo completo.
+
+**Limitaciones importantes:** para hacer sincronización familiar/nube y enviar datos al servidor necesitarás conexión. El lector OCR de facturas necesita descargar el motor y los datos del idioma; aunque se pueden preparar desde el botón **Preparar lector de recibos**, Safari puede limpiar sus archivos y **no se garantiza su funcionamiento sin internet**. Si no se puede leer, la foto sigue adjunta y puedes completar a mano los campos antes de Guardar. Para generar PDFs avanzados con la primera página de PDF incrustada, el generador externo necesita haber sido descargado y conservado en caché. La app abre la **vista imprimible de Safari** como alternativa sin conexión: muestra las fotos en miniatura, pero no incrusta la primera página de los PDFs adjuntos. Los calendarios o menús en la app son locales: las alertas externas de iPhone deben configurarse en Calendario.
+
+**Seguridad de los datos:** las copias locales no son respaldo remoto. Evita borrar Safari, limpiar datos de sitios o desinstalar antes de exportar el respaldo completo con soportes. Abrir otro repo/URL puede cambiar el origen web y hacer que no encuentres los datos locales anteriores. No subas fotografías privadas, respaldos ni recibos a GitHub.
+
+**Actualización:** reemplaza en la raíz de GitHub Pages los archivos del paquete 3.4 (no subas el ZIP). Mantén tu mismo repositorio y dominio para conservar el almacenamiento local; primero exporta respaldo completo. Este paquete es una versión de prueba y no modifica tu repositorio por sí solo.

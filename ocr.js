@@ -106,5 +106,9 @@ async function scan(file,onProgress=()=>{}){
   return parse(text);
  }finally{if(worker)await worker.terminate().catch(()=>{});}
 }
-root.CasaOCR={parse,scan};
+async function prepare(){
+ const tess=await loadEngine();let worker;
+ try{worker=await tess.createWorker('spa',1);return true}finally{if(worker)await worker.terminate().catch(()=>{});}
+}
+root.CasaOCR={parse,scan,prepare};
 })(window);

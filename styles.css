@@ -90,3 +90,6 @@
 
 /* Administración de comprobantes desde Finanzas */
 .support-preview-photo{display:block;max-width:100%;max-height:45vh;width:auto;height:auto;object-fit:contain;margin:12px auto;border:1px solid #e1d7ec;border-radius:12px;background:#fff}
+
+/* Estado de conexión y modo sin internet 3.4 */
+#connectionBadge.offline{color:#fff3c4;font-weight:800} .preview-bar #connectionBadge{letter-spacing:0;text-align:right} @media print{#connectionBadge{display:none!important}}

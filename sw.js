@@ -1,1 +1,34 @@
-const CACHE='casa-en-orden-v3-preview-20261016-v33';const ASSETS=['./','./index.html','./styles.css?v=3.3','./app.js?v=3.3','./ocr.js?v=3.3','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n.startsWith('casa-en-orden-v3-preview-')&&n!==CACHE).map(n=>caches.delete(n)))).then(()=>self.clients.claim()))});self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin)return;if(e.request.mode==='navigate'){e.respondWith(fetch(e.request).then(r=>{if(r.ok){let copy=r.clone();caches.open(CACHE).then(c=>c.put('./',copy))}return r}).catch(()=>caches.match('./index.html')))}else{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))}});
+/* Casa en Orden 3.4 – modo sin conexión, sin borrar cachés de otros repositorios */
+'use strict';
+const PATH=new URL(self.registration.scope).pathname.replace(/[^a-z0-9]+/gi,'-');
+const PREFIX='casa-en-orden-'+PATH+'-';
+const CACHE=PREFIX+'app-v34';
+const LIB_CACHE=PREFIX+'bibliotecas-v34';
+const ASSETS=['./','./index.html','./styles.css?v=3.4','./app.js?v=3.4','./ocr.js?v=3.4','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
+const assetURLs=ASSETS.map(s=>new URL(s,self.registration.scope).href);
+async function precache(){const cache=await caches.open(CACHE);await cache.addAll(assetURLs);}
+self.addEventListener('install',event=>{event.waitUntil(precache().then(()=>self.skipWaiting()));});
+self.addEventListener('activate',event=>{event.waitUntil((async()=>{
+ const names=await caches.keys();await Promise.all(names.filter(n=>n.startsWith(PREFIX)&&n!==CACHE&&n!==LIB_CACHE).map(n=>caches.delete(n)));
+ await self.clients.claim();
+})());});
+self.addEventListener('message',event=>{
+ if(event.data?.type!=='PREPARE_OFFLINE')return;
+ event.waitUntil(precache().then(()=>event.ports[0]?.postMessage({ok:true})).catch(err=>event.ports[0]?.postMessage({ok:false,error:String(err.message||err)})));
+});
+self.addEventListener('fetch',event=>{
+ const req=event.request;if(req.method!=='GET')return;
+ const url=new URL(req.url);const same=url.origin===self.location.origin;
+ if(!same){
+  // Caché opcional para motores externos ya descargados. No publica archivos privados.
+  if(url.protocol!=='https:'||!['cdn.jsdelivr.net','unpkg.com','tessdata.projectnaptha.com'].includes(url.hostname))return;
+  event.respondWith((async()=>{const cache=await caches.open(LIB_CACHE);const hit=await cache.match(req);if(hit)return hit;const res=await fetch(req);if(res.ok||res.type==='opaque')await cache.put(req,res.clone()).catch(()=>{});return res})());return;
+ }
+ // Nunca interceptar URL fuera de este repositorio/scope.
+ if(!url.pathname.startsWith(new URL(self.registration.scope).pathname))return;
+ if(req.mode==='navigate'){
+  event.respondWith((async()=>{try{const res=await fetch(req);if(res.ok){const cache=await caches.open(CACHE);await cache.put(new URL('./index.html',self.registration.scope),res.clone());return res}}catch{}
+   const cached=await caches.match(new URL('./index.html',self.registration.scope));return cached||Response.error();})());return;
+ }
+ event.respondWith((async()=>{const hit=await caches.match(req);if(hit)return hit;try{const res=await fetch(req);if(res.ok){const cache=await caches.open(CACHE);await cache.put(req,res.clone()).catch(()=>{})}return res}catch{return Response.error()}})());
+});
