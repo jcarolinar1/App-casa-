@@ -134,3 +134,11 @@ Al marcar una casilla de **Lista de compras**, el producto se agrega **automáti
 - Esta actualización conserva las mismas claves de almacenamiento para no reiniciar la información local. Tras publicarla, abre la app con conexión y actualiza Safari para que el service worker reciba la versión nueva.
 
 **Validación realizada:** sintaxis de JS, pruebas de lógica automatizadas con Node (traspaso, no duplicación, vínculo con pago, bloqueo de solo lectura y reversión en fallo). La prueba visual en navegador automatizado no fue posible por restricciones del entorno y sigue pendiente la comprobación en Safari del iPhone y la sincronización real de Supabase.
+
+
+## Actualización 3.7.2 · Menú y reposición
+- Al reponer desde un agotado se conservan nombre, categoría, cantidad/unidad, ubicación y último precio cuando sea comparable; nunca se copia el vencimiento antiguo.
+- Menú: si no hay ingredientes suficientes, muestra una receta propuesta con faltantes, botones Ver receta y Añadir faltantes, en lugar de aparentar que no hay recetas.
+- Cambiar receta permite ver preparación sin tener todos los ingredientes; muestra opciones ordenadas por faltantes.
+- Planes previos vacíos muestran propuestas sin sobrescribir datos antiguos.
+- Cada casa mantiene sus propios registros locales y permisos Supabase; probar sincronización real antes de uso familiar.
