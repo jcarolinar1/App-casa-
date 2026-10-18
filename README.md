@@ -1,3 +1,9 @@
+# Casa en Orden 3.8.1 — Pago del mercado y reposiciones
+
+Consulta `ACTUALIZACION_3_8_1_PAGOS_Y_REPOSICIONES.md` para las instrucciones de esta versión. Conserva las funciones de Casa en Orden 3.8.
+
+---
+
 # Casa en Orden 3.6 · Documentos
 
 Lee **GUIA_DOCUMENTOS_3_6.md** antes de la actualización. Conserva todo el resto de las funciones de 3.5. El nuevo SQL para Office/PDF es `supabase_documentos_actualizacion.sql`; ejecútalo sólo cuando la base de Casa en Orden ya esté instalada.
