@@ -121,3 +121,16 @@ Lee primero **`GUIA_DOS_CASAS_IPHONE.md`**. Se añadió el botón **🏠 Cambiar
 ## Novedad 3.7: carpeta Privado protegida
 
 Código numérico exclusivo por casa y usuario en este iPhone, con cifrado AES-GCM y PBKDF2. Ver `GUIA_CODIGO_PRIVADO_3_7.md`. **Face ID no está habilitado.** La membresía por casa depende de la sincronización y las políticas RLS de Supabase.
+
+## Corrección 3.7.1: compra → despensa (18 de octubre de 2026)
+
+Al marcar una casilla de **Lista de compras**, el producto se agrega **automáticamente** a **En casa**, con nombre, categoría, cantidad y ubicación `Despensa`. El vencimiento queda vacío hasta que lo edites en En casa. El artículo comprado permanece marcado en la lista para poder usar **Registrar pago de compras** sin perder el gasto.
+
+- El mensaje `✓ En despensa` confirma el traspaso.
+- Al desmarcarlo, no se elimina su stock: si fue un error, borra ese lote desde **En casa**. Al remarcar no se duplica un lote existente.
+- Si marcaste artículos en 3.7 antes de la actualización, pulsa `➕ A despensa` junto a cada uno para incorporarlos sin alterar pagos anteriores.
+- Cada casa conserva su propio inventario y movimiento de compras. No se necesita ejecutar SQL nuevo.
+- Antes de reemplazar los archivos de GitHub, exporta un respaldo completo con soportes. No subas dicho respaldo al repositorio público.
+- Esta actualización conserva las mismas claves de almacenamiento para no reiniciar la información local. Tras publicarla, abre la app con conexión y actualiza Safari para que el service worker reciba la versión nueva.
+
+**Validación realizada:** sintaxis de JS, pruebas de lógica automatizadas con Node (traspaso, no duplicación, vínculo con pago, bloqueo de solo lectura y reversión en fallo). La prueba visual en navegador automatizado no fue posible por restricciones del entorno y sigue pendiente la comprobación en Safari del iPhone y la sincronización real de Supabase.

@@ -43,3 +43,6 @@ No uses documentación financiera importante hasta confirmar todas estas pruebas
 - Analizador de texto probado con ejemplos de montos, IVA, subtotales y fechas; se corrigieron casos en que el comercio podía confundirse con una fecha o un subtotal.
 - Interfaz ensayada en Chromium con **almacenamiento simulado** y **lectura OCR simulada**: se verificaron sugerencias en los campos, corrección manual, cancelación, guardado del registro con soporte, edición, visualización y eliminación del archivo sin borrar el movimiento. Estas pruebas confirman la lógica de la interfaz, pero **no prueban** el motor OCR real, el almacenamiento nativo del iPhone ni la publicación en GitHub Pages.
 - En el navegador de pruebas el acceso directo a páginas locales estuvo bloqueado; tampoco se pudo probar físicamente Safari/iOS. Los recibos reales pueden requerir ajustes si la calidad de la imagen dificulta la lectura. Antes de usar datos personales, ensaya con un recibo de prueba sin información privada.
+
+
+**3.7.1:** marcado de compra incorpora a despensa sin eliminar el elemento que usa el pago de mercado. Vencimiento editable después. Pruebas lógicas ejecutadas; pendiente prueba manual Safari.
