@@ -1,4 +1,12 @@
-# Casa en Orden 3.4 💜 · Mini-comprobantes y lectura asistida de recibos (versión de prueba)
+# Casa en Orden 3.6 · Documentos
+
+Lee **GUIA_DOCUMENTOS_3_6.md** antes de la actualización. Conserva todo el resto de las funciones de 3.5. El nuevo SQL para Office/PDF es `supabase_documentos_actualizacion.sql`; ejecútalo sólo cuando la base de Casa en Orden ya esté instalada.
+
+# CASA EN ORDEN 3.5 · DOS CASAS Y ADMINISTRADORES
+
+Lee primero **LEEME_DOS_CASAS.md**.
+
+# Casa en Orden 3.5 💜 · Dos casas y administradores independientes (versión de prueba)
 
 
 **Novedad principal:** en Inicio → **Preparar modo sin internet** podrás guardar los archivos básicos de la app para entrar después desde el icono de iPhone sin conexión. Mercado, despensa, finanzas, agenda, comprobantes locales y versión imprimible funcionan localmente. La lectura automática de recibos y la generación avanzada de PDF pueden necesitar archivos previamente descargados, y la nube siempre necesita conexión. Lee `PRUEBA_SIN_INTERNET.md`.
@@ -102,3 +110,14 @@ En **Más → Finanzas → Movimientos**, pulsa **Administrar comprobante** para
 **Seguridad de los datos:** las copias locales no son respaldo remoto. Evita borrar Safari, limpiar datos de sitios o desinstalar antes de exportar el respaldo completo con soportes. Abrir otro repo/URL puede cambiar el origen web y hacer que no encuentres los datos locales anteriores. No subas fotografías privadas, respaldos ni recibos a GitHub.
 
 **Actualización:** reemplaza en la raíz de GitHub Pages los archivos del paquete 3.4 (no subas el ZIP). Mantén tu mismo repositorio y dominio para conservar el almacenamiento local; primero exporta respaldo completo. Este paquete es una versión de prueba y no modifica tu repositorio por sí solo.
+
+## NOVEDAD 3.5: Selector de DOS CASAS con administradores independientes
+
+Lee primero **`GUIA_DOS_CASAS_IPHONE.md`**. Se añadió el botón **🏠 Cambiar casa** en el encabezado de todas las pantallas y la posibilidad de crear/seleccionar Casas independientes. Cada casa tiene copia local distinta por cuenta autenticada y hogar, permisos independientes (propietario, administrador, editor y lector) y actualización opcional con Supabase. Las nuevas casas comienzan vacías para no mezclar información.
+
+**Si ya ejecutaste el esquema 3.4 en Supabase, ejecuta SOLO `supabase_dos_casas_actualizacion.sql`. Si no instalaste las tablas `households` y `memberships`, ejecuta el `supabase_setup.sql` de este paquete completo.** No ejecutes a ciegas un SQL sobre un proyecto con tablas ajenas. Guarda respaldo antes. No se han probado los permisos con dos cuentas reales en tu proyecto.
+
+
+## Novedad 3.7: carpeta Privado protegida
+
+Código numérico exclusivo por casa y usuario en este iPhone, con cifrado AES-GCM y PBKDF2. Ver `GUIA_CODIGO_PRIVADO_3_7.md`. **Face ID no está habilitado.** La membresía por casa depende de la sincronización y las políticas RLS de Supabase.

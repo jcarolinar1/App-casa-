@@ -1,10 +1,10 @@
-/* Casa en Orden 3.4 – modo sin conexión, sin borrar cachés de otros repositorios */
+/* Casa en Orden 3.7 – modo sin conexión, sin borrar cachés de otros repositorios */
 'use strict';
 const PATH=new URL(self.registration.scope).pathname.replace(/[^a-z0-9]+/gi,'-');
 const PREFIX='casa-en-orden-'+PATH+'-';
-const CACHE=PREFIX+'app-v34';
-const LIB_CACHE=PREFIX+'bibliotecas-v34';
-const ASSETS=['./','./index.html','./styles.css?v=3.4','./app.js?v=3.4','./ocr.js?v=3.4','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
+const CACHE=PREFIX+'app-v37';
+const LIB_CACHE=PREFIX+'bibliotecas-v37';
+const ASSETS=['./','./index.html','./styles.css?v=3.7','./app.js?v=3.7','./ocr.js?v=3.7','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
 const assetURLs=ASSETS.map(s=>new URL(s,self.registration.scope).href);
 async function precache(){const cache=await caches.open(CACHE);await cache.addAll(assetURLs);}
 self.addEventListener('install',event=>{event.waitUntil(precache().then(()=>self.skipWaiting()));});

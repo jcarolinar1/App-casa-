@@ -93,3 +93,34 @@
 
 /* Estado de conexión y modo sin internet 3.4 */
 #connectionBadge.offline{color:#fff3c4;font-weight:800} .preview-bar #connectionBadge{letter-spacing:0;text-align:right} @media print{#connectionBadge{display:none!important}}
+
+/* Version 3.5: selector de casas */
+.house-name{display:block;font-size:11px;font-weight:650;color:#786a96;line-height:1.2;margin-top:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.house-header-actions{display:flex;align-items:center;gap:6px}
+.house-switch-btn{border:1px solid #d8c5ef;background:#f1e7ff;color:#5f2eae;border-radius:11px;padding:9px 10px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap}
+@media(max-width:370px){.house-switch-btn{max-width:116px;white-space:normal;line-height:1.2}}
+.house-switch-btn:focus-visible{outline:3px solid #a675ff;outline-offset:2px}
+.house-switch-btn:hover{background:#e8d6ff}
+@media print{.house-switch-btn{display:none!important}}
+
+/* Versión 3.6: documentos compartidos por casa y privados locales */
+.doc-tools{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.doc-folders{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0 24px}
+.doc-folder{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:5px;border:1px solid #e4d5f3;background:#fff;border-radius:16px;min-height:106px;padding:10px 6px;cursor:pointer;color:#493060;box-shadow:0 2px 7px rgba(96,45,147,.04);overflow-wrap:anywhere}
+.doc-folder span{font-size:32px}.doc-folder strong{font-size:12px;line-height:1.2}.doc-folder small{font-size:10px;color:#8a779c}
+.doc-folder.selected{background:#eee0ff;border:2px solid #8644d6;box-shadow:0 3px 10px rgba(114,57,190,.12)}
+.doc-folder:focus-visible{outline:3px solid #8644d6;outline-offset:2px}
+.doc-list{display:grid;gap:10px}.doc-card{background:#fff;border:1px solid #e7d9f5;border-radius:15px;padding:10px;display:flex;gap:10px;align-items:center;min-width:0}
+.doc-icon{width:43px;height:45px;flex:0 0 43px;border-radius:11px;background:#f3edfc;display:flex;align-items:center;justify-content:center;font-size:25px}
+.doc-card-body{display:flex;flex-direction:column;min-width:0;flex:1;gap:3px}
+.doc-card-body strong{font-size:13px;overflow-wrap:anywhere;line-height:1.3;color:#422b5e}
+.doc-card-body span{font-size:10px;color:#7f6b91;overflow-wrap:anywhere}
+.doc-actions{display:flex;flex-flow:column nowrap;gap:4px;align-items:stretch}
+.doc-actions .btn{padding:6px 8px;font-size:10px;white-space:nowrap}
+.doc-preview{display:block;max-width:100%;height:auto;max-height:48vh;object-fit:contain;margin:15px auto;border-radius:12px;border:1px solid #ead9fa}
+@media (max-width:370px){.doc-folders{gap:6px}.doc-folder{min-height:95px}.doc-card{gap:7px}.doc-card-body strong{font-size:11px}}
+
+/* Casa en Orden 3.7 - bóveda privada */
+.vault-lock {text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:22px;padding:24px 18px;}
+.vault-lock .vault-symbol {font-size:54px;background:#efe5ff;border-radius:24px;padding:18px;}
+.vault-lock p{color:#5c5170;line-height:1.55}.vault-lock .btn{min-height:44px;}

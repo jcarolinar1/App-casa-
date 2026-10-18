@@ -1,4 +1,4 @@
--- CASA EN ORDEN 3.0 - EJECUTAR EN SQL EDITOR DE TU PROYECTO SUPABASE.
+-- CASA EN ORDEN 3.5 - EJECUTAR EN SQL EDITOR DE TU PROYECTO SUPABASE.
 -- Usar un proyecto NUEVO; no ejecutes esto sobre tablas propias existentes.
 -- No compartas la service_role ni la contraseña de base de datos.
 create extension if not exists pgcrypto;
@@ -13,7 +13,7 @@ create table if not exists public.households (
 create table if not exists public.memberships (
   household_id uuid not null references public.households(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
-  role text not null check (role in ('owner','editor','viewer')),
+  role text not null check (role in ('owner','admin','editor','viewer')),
   joined_at timestamptz not null default now(),
   primary key(household_id,user_id)
 );
@@ -33,7 +33,7 @@ returns boolean language sql stable security definer set search_path=public as $
 $$;
 create or replace function public.can_edit(h uuid)
 returns boolean language sql stable security definer set search_path=public as $$
-  select exists(select 1 from public.memberships where household_id=h and user_id=auth.uid() and role in ('owner','editor'))
+  select exists(select 1 from public.memberships where household_id=h and user_id=auth.uid() and role in ('owner','admin','editor'))
 $$;
 revoke all on function public.is_member(uuid) from public;
 revoke all on function public.can_edit(uuid) from public;
@@ -69,7 +69,7 @@ create or replace function public.invite_member(p_household uuid,p_email text)
 returns boolean language plpgsql security definer set search_path=public as $$
 declare em text;
 begin
- if not exists(select 1 from public.memberships where household_id=p_household and user_id=auth.uid() and role='owner') then raise exception 'OWNER_REQUIRED';end if;
+ if not exists(select 1 from public.memberships where household_id=p_household and user_id=auth.uid() and role in ('owner','admin')) then raise exception 'ADMIN_REQUIRED';end if;
  em=lower(trim(p_email));
  if em !~ '^[^@ ]+@[^@ ]+\.[^@ ]+$' then raise exception 'INVALID_EMAIL';end if;
  insert into public.invitations(household_id,email,invited_by) values(p_household,em,auth.uid())
@@ -126,7 +126,7 @@ create or replace function public.set_member_role(p_household uuid,p_email text,
 returns boolean language plpgsql security definer set search_path=public as $$
 declare recipient uuid;
 begin
- if p_role not in ('editor','viewer') then raise exception 'INVALID_ROLE';end if;
+ if p_role not in ('admin','editor','viewer') then raise exception 'INVALID_ROLE';end if;
  if not exists(select 1 from public.memberships where household_id=p_household and user_id=auth.uid() and role='owner') then raise exception 'OWNER_REQUIRED';end if;
  select id into recipient from auth.users where lower(email)=lower(trim(p_email)) and email_confirmed_at is not null;
  if recipient is null then raise exception 'ACCOUNT_NOT_FOUND';end if;
@@ -136,3 +136,118 @@ begin
 end $$;
 revoke all on function public.set_member_role(uuid,text,text) from public;
 grant execute on function public.set_member_role(uuid,text,text) to authenticated;
+
+-- Lista de integrantes: solo propietario o administrador de ESTA casa.
+create or replace function public.household_members(p_household uuid)
+returns table(email text,role text)
+language plpgsql stable security definer set search_path = '' as $$
+begin
+ if not exists (
+   select 1 from public.memberships m where m.household_id=p_household
+   and m.user_id=(select auth.uid()) and m.role in ('owner','admin')
+ ) then raise exception 'ADMIN_REQUIRED';end if;
+ return query
+ select u.email::text,m.role::text from public.memberships m
+ join auth.users u on u.id=m.user_id
+ where m.household_id=p_household order by m.joined_at;
+end $$;
+revoke all on function public.household_members(uuid) from public;
+grant execute on function public.household_members(uuid) to authenticated;
+
+
+-- Si empiezas con un proyecto nuevo, también instala la administración de dos casas.
+-- CASA EN ORDEN 3.5: DOS CASAS Y ADMINISTRADORES POR CASA.
+-- PRERREQUISITO: ya ejecutaste supabase_setup.sql de Casa en Orden.
+-- Este archivo actualiza los permisos existentes; NO borra movimientos ni hogares.
+-- Ejecutar UNA VEZ en SQL Editor como propietario del proyecto Supabase.
+BEGIN;
+DO $$ BEGIN
+  IF to_regclass('public.memberships') IS NULL OR to_regclass('public.households') IS NULL THEN
+    RAISE EXCEPTION 'Primero ejecuta supabase_setup.sql de Casa en Orden.';
+  END IF;
+END $$;
+
+-- El administrador puede editar el contenido y gestionar invitaciones de SU casa.
+ALTER TABLE public.memberships DROP CONSTRAINT IF EXISTS memberships_role_check;
+ALTER TABLE public.memberships ADD CONSTRAINT memberships_role_check
+  CHECK (role IN ('owner','admin','editor','viewer'));
+
+CREATE OR REPLACE FUNCTION public.can_edit(h uuid)
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
+ SELECT EXISTS (
+   SELECT 1 FROM public.memberships m
+   WHERE m.household_id = h AND m.user_id = auth.uid()
+     AND m.role IN ('owner','admin','editor')
+ );
+$$;
+REVOKE ALL ON FUNCTION public.can_edit(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.can_edit(uuid) TO authenticated;
+
+-- Permite invitar tanto a propietario como a administrador de ESA casa.
+CREATE OR REPLACE FUNCTION public.invite_member(p_household uuid, p_email text)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE em text;
+BEGIN
+ IF auth.uid() IS NULL THEN RAISE EXCEPTION 'AUTH_REQUIRED'; END IF;
+ IF NOT EXISTS(
+   SELECT 1 FROM public.memberships m WHERE m.household_id=p_household
+    AND m.user_id=auth.uid() AND m.role IN ('owner','admin')
+ ) THEN RAISE EXCEPTION 'ADMIN_REQUIRED'; END IF;
+ em=lower(trim(p_email));
+ IF em IS NULL OR em !~ '^[^@ ]+@[^@ ]+\.[^@ ]+$' THEN RAISE EXCEPTION 'INVALID_EMAIL'; END IF;
+ INSERT INTO public.invitations(household_id,email,invited_by)
+ VALUES(p_household,em,auth.uid())
+ ON CONFLICT(household_id,email) DO UPDATE SET
+ accepted_at=NULL,created_at=now(),invited_by=excluded.invited_by;
+ RETURN TRUE;
+END; $$;
+REVOKE ALL ON FUNCTION public.invite_member(uuid,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.invite_member(uuid,text) TO authenticated;
+
+-- Solo el propietario asigna o retira administradores. No se puede degradar al dueño.
+-- Administradores sí pueden gestionar permisos editor/lector de otras personas no administradoras.
+CREATE OR REPLACE FUNCTION public.set_member_role(p_household uuid,p_email text,p_role text)
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE actor_role text; target_role text; recipient uuid;
+BEGIN
+ IF auth.uid() IS NULL THEN RAISE EXCEPTION 'AUTH_REQUIRED'; END IF;
+ IF p_role NOT IN ('admin','editor','viewer') THEN RAISE EXCEPTION 'INVALID_ROLE'; END IF;
+ SELECT m.role INTO actor_role FROM public.memberships m
+ WHERE m.household_id=p_household AND m.user_id=auth.uid();
+ IF actor_role NOT IN ('owner','admin') OR actor_role IS NULL THEN
+   RAISE EXCEPTION 'ADMIN_REQUIRED'; END IF;
+ IF p_role='admin' AND actor_role<>'owner' THEN
+   RAISE EXCEPTION 'OWNER_REQUIRED_TO_ASSIGN_ADMIN'; END IF;
+ SELECT u.id INTO recipient FROM auth.users u
+ WHERE lower(u.email)=lower(trim(p_email)) AND u.email_confirmed_at IS NOT NULL;
+ IF recipient IS NULL THEN RAISE EXCEPTION 'ACCOUNT_NOT_FOUND'; END IF;
+ SELECT m.role INTO target_role FROM public.memberships m
+ WHERE m.household_id=p_household AND m.user_id=recipient FOR UPDATE;
+ IF target_role IS NULL THEN RAISE EXCEPTION 'NOT_MEMBER_OF_THIS_HOUSE'; END IF;
+ IF target_role='owner' OR (target_role='admin' AND actor_role<>'owner') THEN
+   RAISE EXCEPTION 'CANNOT_CHANGE_THIS_MEMBER'; END IF;
+ UPDATE public.memberships SET role=p_role
+ WHERE household_id=p_household AND user_id=recipient;
+ RETURN TRUE;
+END; $$;
+REVOKE ALL ON FUNCTION public.set_member_role(uuid,text,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.set_member_role(uuid,text,text) TO authenticated;
+
+-- Consultar lista de integrantes solo si administra la casa seleccionada.
+CREATE OR REPLACE FUNCTION public.household_members(p_household uuid)
+RETURNS TABLE(email text, role text)
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = '' AS $$
+BEGIN
+ IF NOT EXISTS (
+   SELECT 1 FROM public.memberships x
+   WHERE x.household_id=p_household AND x.user_id=auth.uid()
+   AND x.role IN ('owner','admin')
+ ) THEN RAISE EXCEPTION 'ADMIN_REQUIRED'; END IF;
+ RETURN QUERY
+ SELECT u.email::text,m.role::text FROM public.memberships m
+ JOIN auth.users u ON u.id=m.user_id
+ WHERE m.household_id=p_household ORDER BY m.joined_at;
+END; $$;
+REVOKE ALL ON FUNCTION public.household_members(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.household_members(uuid) TO authenticated;
+COMMIT;
