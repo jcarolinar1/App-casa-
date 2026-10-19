@@ -2,9 +2,9 @@
 'use strict';
 const PATH=new URL(self.registration.scope).pathname.replace(/[^a-z0-9]+/gi,'-');
 const PREFIX='casa-en-orden-'+PATH+'-';
-const CACHE=PREFIX+'app-v4002';
-const LIB_CACHE=PREFIX+'bibliotecas-v40';
-const ASSETS=['./','./index.html','./config.public.js?v=4.0','./styles.css?v=4.0','./app.js?v=4.0','./ocr.js?v=4.0','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
+const CACHE=PREFIX+'app-v4200';
+const LIB_CACHE=PREFIX+'bibliotecas-v42';
+const ASSETS=['./','./index.html','./config.public.js?v=4.2.0','./styles.css?v=4.2.0','./app.js?v=4.2.0','./ocr.js?v=4.2.0','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
 const assetURLs=ASSETS.map(s=>new URL(s,self.registration.scope).href);
 async function precache(){const cache=await caches.open(CACHE);await cache.addAll(assetURLs);}
 self.addEventListener('install',event=>{event.waitUntil(precache().then(()=>self.skipWaiting()));});
@@ -35,6 +35,9 @@ self.addEventListener('fetch',event=>{
  if(req.mode==='navigate'){
   event.respondWith((async()=>{try{const res=await fetch(req);if(res.ok){const cache=await caches.open(CACHE);await cache.put(new URL('./index.html',self.registration.scope),res.clone());return res}}catch{}
    const cached=await caches.match(new URL('./index.html',self.registration.scope));return cached||Response.error();})());return;
+ }
+ if(url.pathname.endsWith('/config.public.js')){
+  event.respondWith((async()=>{try{const fresh=await fetch(req,{cache:'no-store'});if(fresh.ok){const cache=await caches.open(CACHE);await cache.put(req,fresh.clone());return fresh}}catch{}return (await caches.match(req))||Response.error()})());return;
  }
  event.respondWith((async()=>{const hit=await caches.match(req);if(hit)return hit;try{const res=await fetch(req);if(res.ok){const cache=await caches.open(CACHE);await cache.put(req,res.clone()).catch(()=>{})}return res}catch{return Response.error()}})());
 });

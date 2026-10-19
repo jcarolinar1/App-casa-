@@ -225,3 +225,13 @@
 .public-login-card .btn-row{justify-content:center;margin-top:14px}
 @media(max-width:365px){.brand{font-size:15px}.house-switch-btn{font-size:10px;max-width:80px}.quick-grid{gap:7px}.quick-tile{min-height:78px}.quick-tile strong{font-size:11px}}
 @media print{.preview-bar,.quick-grid,.public-login{display:none!important}}
+
+/* Casa en Orden 4.1: estado de red y cierre de sesión en la cabecera. */
+.preview-bar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.preview-bar .top-identity{flex:1 1 auto;max-width:none;min-width:0}
+.header-session-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-shrink:0}
+.header-logout{appearance:none;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.14);color:#fff;border-radius:10px;min-height:32px;padding:6px 9px;font-size:11px;line-height:1.1;font-weight:750;cursor:pointer}
+.header-logout:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.header-logout[hidden]{display:none!important}
+@media(max-width:390px){.preview-bar{padding-inline:8px;gap:5px}.preview-bar .top-identity strong{font-size:12px}.header-session-actions{gap:5px}.preview-bar #connectionBadge{font-size:10px}.header-logout{font-size:10px;padding:5px 7px;min-height:31px}}
+@media print{.header-logout{display:none!important}}
