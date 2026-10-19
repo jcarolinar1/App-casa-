@@ -1,7 +1,7 @@
-# Casa en Orden 3.8.3
+# Casa en Orden 3.8.5 — dos casas, finanzas y préstamos por persona
 
-Nuevo: perfil de mascota en Cartagena, bebé en Bogotá, y propietarios/administradores con correo visibles por casa. Conserva funciones de 3.8.2: mercado, finanzas, recetas, documentos y dos casas.
+PWA estática para GitHub Pages con respaldo de datos, Mercado, Despensa, Menú, Finanzas, Cuentas, Documentos, administración por casas y el nuevo apartado **Préstamos por persona**.
 
-**Ejecutar** `supabase_administradores_visibles_3_8_3.sql` una vez en Supabase para consultar correos de administración.
+**Nuevo:** por cobrar / por pagar, intereses opcionales (ninguno, fijo o mensual simple), abonos parciales, vencimientos, filtros por persona y movimientos financieros vinculados sin inflar ingresos/gastos ordinarios.
 
-Ver `INSTALAR_3_8_3_IPHONE.md` antes de subir los archivos a GitHub.
+Revisa `ACTUALIZACION_3_8_5_PRESTAMOS_PERSONAS.md` antes de actualizar. No publiques documentos personales ni contraseñas en GitHub.

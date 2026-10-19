@@ -134,3 +134,17 @@
 .recent-expense{color:#be4660;}
 .recent-transfer{color:#6e5b7f;}
 @media(max-width:390px){.recent-home-amount{font-size:11px}.recent-home-move .avatar{min-width:35px;}}
+
+/* Casa en Orden 3.8.4: sesión activa clara, separada del administrador del hogar */
+.account-identity{background:#f1e8fe;border:1px solid #e2d0f8;border-radius:18px;padding:14px 16px;margin:14px 0 18px;color:#49266a;overflow-wrap:anywhere}
+.account-identity-top{display:flex;justify-content:space-between;gap:6px;align-items:center;font-size:12px;font-weight:800;color:#65329b}
+.account-online-status{color:#19744f;font-size:10px;font-weight:750;white-space:nowrap}
+.account-email{display:block;font-size:16px;line-height:1.4;margin:7px 0;overflow-wrap:anywhere;word-break:break-word;color:#2f1f3f}
+.account-identity-details{font-size:11px;color:#71627e}
+.account-identity .btn-row{margin-top:10px}
+.account-identity-small{margin:8px 0 16px;padding:12px}
+@media(max-width:370px){.account-email{font-size:14px}.account-identity-top{align-items:flex-start;flex-direction:column}}
+@media print{.account-identity{display:none!important}}
+
+/* Casa en Orden 3.8.5 - cartera de préstamos por personas */
+.loan-person-group{margin-top:18px}.loan-card{border-left:4px solid #8f5ddd}.loan-card .loan-amount{font-size:22px;font-weight:800;color:#54299b;letter-spacing:-.035em;margin:9px 0 6px}.loan-summary{margin:16px 0}.loan-summary .card{overflow-wrap:anywhere}.loan-summary strong{font-size:15px}.loan-person-group .group-title{overflow-wrap:anywhere}.loan-card .itemmeta{overflow-wrap:anywhere}
