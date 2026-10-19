@@ -25,7 +25,7 @@
 ## Pruebas recomendadas
 
 - **Mercado:** agota un producto de prueba; en «Historial de agotados», los nombres repetidos se agrupan y muestran cuántas veces se agotaron.
-- **Configuración:** elige entre Morado, Azul, Verde, Rosa e Índigo. El color se guarda en ese dispositivo.
+- **Configuración:** elige entre Morado, Azul, Verde, Rosa y Noche. El color se guarda en ese dispositivo.
 - **Presupuestos:** elige Semanal, Quincenal, Mes calendario, 30 días, Trimestral, Personalizado o Sin fecha de cierre.
 - **Informes:** accede desde **Más → Configuración → Informes y cierres**. Los controles de PDF ya no están en Finanzas.
 - **Miembros:** asigna nombres a administrador, editor y lector y revisa cómo se muestran en cada casa. El correo de inicio de sesión seguirá visible en «Mi cuenta», para saber cuál cuenta está conectada.

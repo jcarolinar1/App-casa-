@@ -39,19 +39,21 @@ CREATE OR REPLACE FUNCTION public.set_member_display_name(
  p_household uuid, p_email text, p_name text)
 RETURNS boolean
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
-DECLARE target_id uuid; target_role text; actor_role text;
+DECLARE target_id uuid;
 BEGIN
- SELECT m.role INTO actor_role FROM public.memberships m WHERE m.household_id=p_household AND m.user_id=auth.uid();
- IF actor_role IS NULL OR actor_role NOT IN ('owner','admin') THEN RAISE EXCEPTION 'ADMIN_REQUIRED'; END IF;
+ IF auth.uid() IS NULL OR NOT EXISTS (
+  SELECT 1 FROM public.memberships m
+  WHERE m.household_id=p_household AND m.user_id=auth.uid()
+  AND m.role IN ('owner','admin')
+ ) THEN RAISE EXCEPTION 'ADMIN_REQUIRED'; END IF;
  IF p_name IS NULL OR char_length(btrim(p_name)) NOT BETWEEN 1 AND 65
  THEN RAISE EXCEPTION 'INVALID_NAME'; END IF;
- SELECT m.user_id,m.role INTO target_id,target_role
+ SELECT m.user_id INTO target_id
  FROM public.memberships m
  JOIN auth.users u ON u.id=m.user_id
  WHERE m.household_id=p_household AND lower(u.email)=lower(trim(p_email))
  LIMIT 1;
  IF target_id IS NULL THEN RAISE EXCEPTION 'MEMBER_NOT_FOUND'; END IF;
- IF actor_role='admin' AND target_role IN ('owner','admin') THEN RAISE EXCEPTION 'OWNER_REQUIRED_FOR_THIS_NAME'; END IF;
  INSERT INTO public.household_member_names(household_id,user_id,display_name,updated_at)
  VALUES(p_household,target_id,btrim(p_name),now())
  ON CONFLICT (household_id,user_id)

@@ -163,3 +163,8 @@
 .theme-chip.selected{outline:2px solid var(--purple)}
 .swatch{height:18px;width:18px;border-radius:50%;display:inline-block;background:#713bd3}
 .swatch.azul{background:#2475c5}.swatch.verde{background:#287f69}.swatch.rosa{background:#b04d91}.swatch.noche{background:#332477}
+
+/* 3.9.1: el nombre de la persona tiene prioridad; el correo solo aparece en Mi cuenta. */
+.account-display-name{display:block;font-size:21px;line-height:1.28;margin:8px 0;color:#2f1f3f;overflow-wrap:anywhere;word-break:break-word}
+.account-name-hint{margin:8px 0 0;color:#756383}
+@media(max-width:370px){.account-display-name{font-size:19px}}
