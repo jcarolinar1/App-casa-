@@ -235,3 +235,10 @@
 .header-logout[hidden]{display:none!important}
 @media(max-width:390px){.preview-bar{padding-inline:8px;gap:5px}.preview-bar .top-identity strong{font-size:12px}.header-session-actions{gap:5px}.preview-bar #connectionBadge{font-size:10px}.header-logout{font-size:10px;padding:5px 7px;min-height:31px}}
 @media print{.header-logout{display:none!important}}
+
+/* 4.2.1: Always reserve enough room for the session exit on iPhone. */
+.preview-bar .top-identity{flex:1 1 auto;min-width:0;max-width:100%}
+.preview-bar .header-session-actions{margin-left:auto;flex:0 0 auto}
+.header-logout{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;touch-action:manipulation}
+.header-logout[hidden]{display:none!important}
+@media(max-width:390px){.preview-bar{padding-inline:8px;gap:4px}.preview-bar .top-identity strong{max-width:85px;overflow:hidden;text-overflow:ellipsis}.header-session-actions{gap:4px}.header-logout{min-width:70px}}

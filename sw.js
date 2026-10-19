@@ -2,9 +2,9 @@
 'use strict';
 const PATH=new URL(self.registration.scope).pathname.replace(/[^a-z0-9]+/gi,'-');
 const PREFIX='casa-en-orden-'+PATH+'-';
-const CACHE=PREFIX+'app-v4200';
-const LIB_CACHE=PREFIX+'bibliotecas-v42';
-const ASSETS=['./','./index.html','./config.public.js?v=4.2.0','./styles.css?v=4.2.0','./app.js?v=4.2.0','./ocr.js?v=4.2.0','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
+const CACHE=PREFIX+'app-v4210';
+const LIB_CACHE=PREFIX+'bibliotecas-v421';
+const ASSETS=['./','./index.html','./config.public.js?v=4.2.1','./styles.css?v=4.2.1','./app.js?v=4.2.1','./ocr.js?v=4.2.1','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
 const assetURLs=ASSETS.map(s=>new URL(s,self.registration.scope).href);
 async function precache(){const cache=await caches.open(CACHE);await cache.addAll(assetURLs);}
 self.addEventListener('install',event=>{event.waitUntil(precache().then(()=>self.skipWaiting()));});
