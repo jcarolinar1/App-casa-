@@ -148,3 +148,18 @@
 
 /* Casa en Orden 3.8.5 - cartera de préstamos por personas */
 .loan-person-group{margin-top:18px}.loan-card{border-left:4px solid #8f5ddd}.loan-card .loan-amount{font-size:22px;font-weight:800;color:#54299b;letter-spacing:-.035em;margin:9px 0 6px}.loan-summary{margin:16px 0}.loan-summary .card{overflow-wrap:anywhere}.loan-summary strong{font-size:15px}.loan-person-group .group-title{overflow-wrap:anywhere}.loan-card .itemmeta{overflow-wrap:anywhere}
+
+/* Personalización de color · Casa en Orden */
+:root[data-casa-theme="azul"]{--purple:#2475c5;--deep:#164d8b;--light:#e3f1ff;--bg:#f4f9ff;--line:#dceafa}
+:root[data-casa-theme="verde"]{--purple:#287f69;--deep:#145744;--light:#e0f5ed;--bg:#f5fcf9;--line:#d7ede4}
+:root[data-casa-theme="rosa"]{--purple:#b04d91;--deep:#802966;--light:#fbe5f3;--bg:#fff8fc;--line:#f6deee}
+:root[data-casa-theme="noche"]{--purple:#5640a9;--deep:#332477;--light:#e4e0f8;--bg:#f1f0f8;--line:#ddd9ef}
+:root[data-casa-theme="azul"] .hero{background:linear-gradient(125deg,#164d8b,#50a2ee)}
+:root[data-casa-theme="verde"] .hero{background:linear-gradient(125deg,#15634f,#49ac82)}
+:root[data-casa-theme="rosa"] .hero{background:linear-gradient(125deg,#81316d,#d88bbe)}
+:root[data-casa-theme="noche"] .hero{background:linear-gradient(125deg,#35236d,#775fc7)}
+.theme-choice{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.theme-chip{display:flex;align-items:center;gap:7px;min-height:40px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:#fff;color:var(--ink);font-weight:700;font-size:12px}
+.theme-chip.selected{outline:2px solid var(--purple)}
+.swatch{height:18px;width:18px;border-radius:50%;display:inline-block;background:#713bd3}
+.swatch.azul{background:#2475c5}.swatch.verde{background:#287f69}.swatch.rosa{background:#b04d91}.swatch.noche{background:#332477}
