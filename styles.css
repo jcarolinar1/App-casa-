@@ -168,3 +168,60 @@
 .account-display-name{display:block;font-size:21px;line-height:1.28;margin:8px 0;color:#2f1f3f;overflow-wrap:anywhere;word-break:break-word}
 .account-name-hint{margin:8px 0 0;color:#756383}
 @media(max-width:370px){.account-display-name{font-size:19px}}
+
+/* Casa en Orden 4.0 · cabecera compacta y accesos rápidos */
+.session-top{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+.session-top #sessionTopName{color:#fff;font-size:11px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px}
+.preview-bar #connectionBadge{color:#e4d6f8;white-space:nowrap}
+.mast{gap:8px;align-items:center;margin-bottom:18px}.brand{min-width:0;font-size:17px;line-height:1.2}.brand .house-name{display:block;letter-spacing:0;font-size:11px;color:var(--muted);font-weight:650;margin-top:2px}
+.quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.quick-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:86px;padding:11px 6px;border:1px solid var(--line);background:#fff;border-radius:16px;box-shadow:var(--shadow);color:var(--deep)}
+.quick-tile span{font-size:26px}.quick-tile strong{font-size:12px;font-weight:750;overflow-wrap:anywhere;text-align:center}
+.home-quick{margin-top:18px}.home-quick h2{margin-bottom:12px;font-size:17px}
+.tenant-section{margin-top:21px}.tenant-card{border-left:4px solid var(--purple)}
+.tenant-paid{color:var(--green)}.tenant-pending{color:#9b6618}.tenant-card .btn-row{margin-top:11px}
+.public-login{max-width:470px;margin:18px auto 0;padding-bottom:40px}
+.public-login-heading{background:linear-gradient(130deg,var(--deep),var(--purple));border-radius:22px;color:white;padding:30px 24px;text-align:center}
+.public-login-heading h1{font-size:26px;margin:6px 0}.public-login-heading p{color:#f3e9ff;font-size:13px}
+.public-logo{font-size:43px}.public-login-card{margin-top:16px;padding:23px}.public-login-card h2{margin:2px 0 9px}.public-login-card p{line-height:1.5;margin-bottom:14px}
+.public-signin{width:100%;margin:2px 0 12px}.public-login-card .btn-row{justify-content:center}
+@media(max-width:380px){.session-top #sessionTopName{max-width:100px;font-size:10px}.session-top{gap:5px}.brand{font-size:15px}.brandicon{height:36px;width:36px}.house-switch-btn{max-width:93px;font-size:10px;padding:7px}.iconbtn{width:36px;height:36px}}
+@media print{.public-login{display:none}}
+
+/* Casa en Orden 4.0 - diseño aprobado, acceso por enlace e inquilinos de Cartagena */
+.preview-bar {min-height:48px;padding:9px max(14px,env(safe-area-inset-right));gap:10px}
+.preview-bar .top-identity{color:#fff;min-width:0;max-width:70%;font-size:12px;font-weight:650;display:flex;align-items:center;gap:6px;letter-spacing:0}
+.preview-bar .top-identity strong{display:block;min-width:0;max-width:100%;font-weight:850;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.preview-bar #connectionBadge{color:#d5ffe3;font-size:11px;font-weight:750;white-space:nowrap;letter-spacing:0}
+.preview-bar #connectionBadge.offline{color:#ffe4a8}
+.mast{margin-bottom:22px;gap:9px}
+.brand{font-size:16px;gap:9px;min-width:0;letter-spacing:-.03em}
+.brandicon{width:40px;height:40px;flex:0 0 40px}
+.house-header-actions{gap:6px;flex-shrink:0}
+.house-switch-btn{min-height:39px;font-size:11px;padding:8px 10px}
+.iconbtn{width:39px;height:39px;flex:0 0 39px}
+.home-quick{margin-top:19px}
+.home-quick h2{font-size:17px;margin-bottom:12px}
+.quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.quick-tile{min-width:0;min-height:85px;background:white;border:1px solid var(--line);border-radius:18px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--deep);padding:12px 6px;box-shadow:var(--shadow)}
+.quick-tile span{font-size:25px;line-height:1.1}
+.quick-tile strong{font-size:12px;overflow-wrap:anywhere;text-align:center}
+.quick-tile:active{background:var(--light)}
+.tenant-section{margin-top:24px}
+.tenant-section>.small{margin-bottom:11px}
+.tenant-card{border-left:4px solid var(--purple)}
+.tenant-card .btn-row{margin-top:10px}
+.tenant-paid{color:var(--green);font-weight:750}
+.tenant-pending{color:var(--yellow);font-weight:750}
+.public-login{max-width:440px;margin:10vh auto 0;display:grid;gap:12px}
+.public-login-heading{text-align:center;display:grid;justify-items:center;gap:10px}
+.public-login-heading .public-logo{height:66px;width:66px;background:var(--purple);color:white;border-radius:20px;font-size:46px;display:grid;place-items:center}
+.public-login-heading h1{font-size:28px;margin:0}
+.public-login-heading p{font-size:13px;color:var(--muted)}
+.public-login-card{padding:23px;margin:0;border-radius:22px}
+.public-login-card h2{margin-bottom:9px}
+.public-login-card>p{line-height:1.5;margin:6px 0 19px}
+.public-login-card .public-signin{width:100%;min-height:49px}
+.public-login-card .btn-row{justify-content:center;margin-top:14px}
+@media(max-width:365px){.brand{font-size:15px}.house-switch-btn{font-size:10px;max-width:80px}.quick-grid{gap:7px}.quick-tile{min-height:78px}.quick-tile strong{font-size:11px}}
+@media print{.preview-bar,.quick-grid,.public-login{display:none!important}}

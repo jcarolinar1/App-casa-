@@ -1,10 +1,10 @@
-/* Casa en Orden 3.9.1 – modo sin conexión, sin borrar cachés de otros repositorios */
+/* Casa en Orden 4.0 – modo sin conexión, sin borrar cachés de otros repositorios */
 'use strict';
 const PATH=new URL(self.registration.scope).pathname.replace(/[^a-z0-9]+/gi,'-');
 const PREFIX='casa-en-orden-'+PATH+'-';
-const CACHE=PREFIX+'app-v391';
-const LIB_CACHE=PREFIX+'bibliotecas-v391';
-const ASSETS=['./','./index.html','./styles.css?v=3.9.1.1','./app.js?v=3.9.1.1','./ocr.js?v=3.9.1.1','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
+const CACHE=PREFIX+'app-v4002';
+const LIB_CACHE=PREFIX+'bibliotecas-v40';
+const ASSETS=['./','./index.html','./config.public.js?v=4.0','./styles.css?v=4.0','./app.js?v=4.0','./ocr.js?v=4.0','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png'];
 const assetURLs=ASSETS.map(s=>new URL(s,self.registration.scope).href);
 async function precache(){const cache=await caches.open(CACHE);await cache.addAll(assetURLs);}
 self.addEventListener('install',event=>{event.waitUntil(precache().then(()=>self.skipWaiting()));});
@@ -26,6 +26,12 @@ self.addEventListener('fetch',event=>{
  }
  // Nunca interceptar URL fuera de este repositorio/scope.
  if(!url.pathname.startsWith(new URL(self.registration.scope).pathname))return;
+ // La propietaria puede actualizar la conexión pública DESPUÉS de instalar la app.
+ // Para ese archivo, probar siempre la red antes de la copia antigua en caché.
+ if(url.pathname.endsWith('/config.public.js')){
+  event.respondWith((async()=>{try{const res=await fetch(req,{cache:'no-store'});if(res.ok){const cache=await caches.open(CACHE);await cache.put(req,res.clone());return res}}catch{}
+   const previous=await caches.match(req);return previous||Response.error()})());return;
+ }
  if(req.mode==='navigate'){
   event.respondWith((async()=>{try{const res=await fetch(req);if(res.ok){const cache=await caches.open(CACHE);await cache.put(new URL('./index.html',self.registration.scope),res.clone());return res}}catch{}
    const cached=await caches.match(new URL('./index.html',self.registration.scope));return cached||Response.error();})());return;
